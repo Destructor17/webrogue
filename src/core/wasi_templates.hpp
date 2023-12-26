@@ -5,7 +5,7 @@
 namespace webrogue {
 namespace core {
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE WASIObject::NAME ARGS
+#define WASI_FUNCTION_IMPL(RET_TYPE, NAME, ARGS) RET_TYPE WASIObject::NAME ARGS
 
 #define WASI_CHECK(condition)                                                  \
     if (!(condition)) {                                                        \

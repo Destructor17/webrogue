@@ -14,63 +14,63 @@ ApiObject::ApiObject(ModsRuntime *pRuntime, Config *pConfig)
     : runtime(pRuntime), config(pConfig) {
 }
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE ApiObject::NAME ARGS
+#define WR_API_FUNCTION_IMPL(RET_TYPE, NAME, ARGS) RET_TYPE ApiObject::NAME ARGS
 
 // rendering
 
-NR_API_FUNCTION(int32_t, nr_get_render_width, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_get_render_width, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return -1;
     }
     return output->size().x;
 }
-NR_API_FUNCTION(int32_t, nr_get_render_height, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_get_render_height, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return -1;
     }
     return output->size().y;
 }
-NR_API_FUNCTION(void, nr_start_color, ()) {
+WR_API_FUNCTION_IMPL(void, nr_start_color, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
     output->startColor();
 }
-NR_API_FUNCTION(int32_t, nr_get_color_pairs_count, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_get_color_pairs_count, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return -1;
     }
     return output->getColorPairsCount();
 }
-NR_API_FUNCTION(int32_t, nr_get_colors_count, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_get_colors_count, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return -1;
     }
     return output->getColorsCount();
 }
-NR_API_FUNCTION(void, nr_set_color,
-                (int32_t color, int32_t r, int32_t g, int32_t b)) {
+WR_API_FUNCTION_IMPL(void, nr_set_color,
+                     (int32_t color, int32_t r, int32_t g, int32_t b)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
     output->setColor(color, r, g, b);
 }
-NR_API_FUNCTION(void, nr_set_color_pair,
-                (int32_t color_pair, int32_t fg, int32_t bg)) {
+WR_API_FUNCTION_IMPL(void, nr_set_color_pair,
+                     (int32_t color_pair, int32_t fg, int32_t bg)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
     output->setColorPair(color_pair, fg, bg);
 }
-NR_API_FUNCTION(void, nr_render_set_screen_data,
-                (uint64_t in_buff_offset, int64_t size)) {
+WR_API_FUNCTION_IMPL(void, nr_render_set_screen_data,
+                     (uint64_t in_buff_offset, int64_t size)) {
 
     if (size != output->size().x * output->size().y) {
         assert(false);
@@ -82,7 +82,7 @@ NR_API_FUNCTION(void, nr_render_set_screen_data,
         return;
     }
 }
-NR_API_FUNCTION(int32_t, nr_interrupt, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_interrupt, ()) {
     if (!runtime->isInitialized) {
         assert(false);
         return -1;
@@ -118,8 +118,8 @@ NR_API_FUNCTION(int32_t, nr_interrupt, ()) {
     } // frames loop
 }
 
-NR_API_FUNCTION(void, nr_copy_events,
-                (uint64_t out_buff_offset, int64_t size)) {
+WR_API_FUNCTION_IMPL(void, nr_copy_events,
+                     (uint64_t out_buff_offset, int64_t size)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
@@ -137,7 +137,8 @@ NR_API_FUNCTION(void, nr_copy_events,
 
 // debug
 
-NR_API_FUNCTION(void, nr_debug_print, (uint64_t in_buff_offset, int64_t size)) {
+WR_API_FUNCTION_IMPL(void, nr_debug_print,
+                     (uint64_t in_buff_offset, int64_t size)) {
     std::vector<char> hostData;
     hostData.resize(size + 1);
     if (!runtime->getVMData(hostData.data(), in_buff_offset, size)) {
@@ -151,10 +152,10 @@ NR_API_FUNCTION(void, nr_debug_print, (uint64_t in_buff_offset, int64_t size)) {
 
 // sqlite
 
-NR_API_FUNCTION(int64_t, nr_sqlite3_errmsg_size, ()) {
+WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_errmsg_size, ()) {
     return strlen(sqlite3_errmsg(db->getDb()));
 }
-NR_API_FUNCTION(void, nr_sqlite3_errmsg_get, (uint64_t out_err_offset)) {
+WR_API_FUNCTION_IMPL(void, nr_sqlite3_errmsg_get, (uint64_t out_err_offset)) {
     const char *err = sqlite3_errmsg(db->getDb());
     size_t len = strlen(err);
     if (!runtime->setVMData(err, out_err_offset, len + 1)) {
@@ -162,9 +163,9 @@ NR_API_FUNCTION(void, nr_sqlite3_errmsg_get, (uint64_t out_err_offset)) {
         return;
     }
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_prepare_v2,
-                (uint64_t in_zSql_offset, int64_t zSql_size,
-                 uint64_t out_ppStmt_offset, uint64_t out_pzTail_offset)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_prepare_v2,
+                     (uint64_t in_zSql_offset, int64_t zSql_size,
+                      uint64_t out_ppStmt_offset, uint64_t out_pzTail_offset)) {
     std::vector<char> zSql;
     zSql.resize(zSql_size + 1);
 
@@ -215,23 +216,25 @@ NR_API_FUNCTION(int32_t, nr_sqlite3_prepare_v2,
     }
     return result;
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_step, (int64_t stmt)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_step, (int64_t stmt)) {
     return sqlite3_step(db->stmtById(stmt));
 }
-NR_API_FUNCTION(int64_t, nr_sqlite3_last_insert_rowid, ()) {
+WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_last_insert_rowid, ()) {
     return sqlite3_last_insert_rowid(db->getDb());
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_changes, ()) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_changes, ()) {
     return sqlite3_changes(db->getDb());
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_column_int, (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_int,
+                     (int64_t stmt, int32_t iCol)) {
     return sqlite3_column_int(db->stmtById(stmt), iCol);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_column_type, (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_type,
+                     (int64_t stmt, int32_t iCol)) {
     return sqlite3_column_type(db->stmtById(stmt), iCol);
 }
-NR_API_FUNCTION(int64_t, nr_sqlite3_column_text_size,
-                (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_column_text_size,
+                     (int64_t stmt, int32_t iCol)) {
 
     const char *text =
         (const char *)sqlite3_column_text(db->stmtById(stmt), iCol);
@@ -239,8 +242,8 @@ NR_API_FUNCTION(int64_t, nr_sqlite3_column_text_size,
         return strlen(text);
     return -1;
 }
-NR_API_FUNCTION(void, nr_sqlite3_column_text_get,
-                (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
+WR_API_FUNCTION_IMPL(void, nr_sqlite3_column_text_get,
+                     (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
     const char *text =
         (const char *)sqlite3_column_text(db->stmtById(stmt), iCol);
     size_t len = strlen(text);
@@ -249,20 +252,20 @@ NR_API_FUNCTION(void, nr_sqlite3_column_text_get,
         return;
     }
 }
-NR_API_FUNCTION(double, nr_sqlite3_column_double,
-                (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(double, nr_sqlite3_column_double,
+                     (int64_t stmt, int32_t iCol)) {
     return sqlite3_column_double(db->stmtById(stmt), iCol);
 }
-NR_API_FUNCTION(int64_t, nr_sqlite3_column_int64,
-                (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_column_int64,
+                     (int64_t stmt, int32_t iCol)) {
     return sqlite3_column_int64(db->stmtById(stmt), iCol);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_column_bytes,
-                (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_bytes,
+                     (int64_t stmt, int32_t iCol)) {
     return sqlite3_column_bytes(db->stmtById(stmt), iCol);
 }
-NR_API_FUNCTION(void, nr_sqlite3_column_blob_get,
-                (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
+WR_API_FUNCTION_IMPL(void, nr_sqlite3_column_blob_get,
+                     (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
     size_t len = sqlite3_column_bytes(db->stmtById(stmt), iCol);
     if (!runtime->setVMData(sqlite3_column_blob(db->stmtById(stmt), iCol),
                             out_result_offset, len)) {
@@ -270,28 +273,28 @@ NR_API_FUNCTION(void, nr_sqlite3_column_blob_get,
         return;
     }
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_finalize, (int64_t stmt)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_finalize, (int64_t stmt)) {
 
     int result = sqlite3_finalize(db->stmtById(stmt));
     if (result == SQLITE_OK)
         db->stmtDelete(stmt);
     return result;
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_reset, (int64_t stmt)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_reset, (int64_t stmt)) {
     return sqlite3_reset(db->stmtById(stmt));
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_int,
-                (int64_t stmt, int32_t a, int32_t b)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_int,
+                     (int64_t stmt, int32_t a, int32_t b)) {
 
     return sqlite3_bind_int(db->stmtById(stmt), a, b);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_null, (int64_t stmt, int32_t a)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_null, (int64_t stmt, int32_t a)) {
 
     return sqlite3_bind_null(db->stmtById(stmt), a);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_text,
-                (int64_t stmt, int32_t a, uint64_t in_text_offset,
-                 int64_t b_size)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_text,
+                     (int64_t stmt, int32_t a, uint64_t in_text_offset,
+                      int64_t b_size)) {
     std::vector<char> hostText;
     hostText.resize(b_size + 1);
     if (!runtime->getVMData(hostText.data(), in_text_offset, b_size)) {
@@ -303,17 +306,18 @@ NR_API_FUNCTION(int32_t, nr_sqlite3_bind_text,
     return sqlite3_bind_text(db->stmtById(stmt), a, hostText.data(), b_size,
                              SQLITE_TRANSIENT);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_double,
-                (int64_t stmt, int32_t a, double b)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_double,
+                     (int64_t stmt, int32_t a, double b)) {
     return sqlite3_bind_double(db->stmtById(stmt), a, b);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_int64,
-                (int64_t stmt, int32_t a, int64_t b)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_int64,
+                     (int64_t stmt, int32_t a, int64_t b)) {
 
     return sqlite3_bind_int64(db->stmtById(stmt), a, b);
 }
-NR_API_FUNCTION(int32_t, nr_sqlite3_bind_blob,
-                (int64_t stmt, int32_t a, uint64_t in_blob_offset, int32_t n)) {
+WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_blob,
+                     (int64_t stmt, int32_t a, uint64_t in_blob_offset,
+                      int32_t n)) {
     std::vector<char> hostBlob;
     hostBlob.resize(n);
     if (!runtime->getVMData(hostBlob.data(), in_blob_offset, n)) {

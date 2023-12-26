@@ -55,7 +55,6 @@ set(
     ${WEBROGUE_ROOT_PATH}/external/xz/linux/lib/xz/xz_crc32.c
     
 
-    ${WEBROGUE_ROOT_PATH}/src/core/wasi_functions.h
     ${WEBROGUE_ROOT_PATH}/src/core/wasi_templates.hpp
     ${WEBROGUE_ROOT_PATH}/src/core/wasi_types.hpp
     ${WEBROGUE_ROOT_PATH}/src/core/WASIObject.hpp
@@ -169,21 +168,21 @@ embed_resource(${WEBROGUE_ROOT_PATH}/src/outputs/sdl/sdl_font.ttf)
 #glue
 add_custom_command(
     OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.hpp ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/nr_api.h" "-DNR_API_EMBEDDING=src/runtimes/embedded/nr_api_embedding_glue" -P src/runtimes/embedded/gen_glue_embedded.cmake
+    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DNR_API_EMBEDDING=src/runtimes/embedded/nr_api_embedding_glue" -P src/runtimes/embedded/gen_glue_embedded.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
-    DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/nr_api.h ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/gen_glue_embedded.cmake
+    DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/wr_api_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/gen_glue_embedded.cmake
 )
 add_custom_command(
     OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_glue.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/nr_api.h" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_glue" -P src/runtimes/wasm2c/gen_glue_wasm2c.cmake
+    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_glue" -P src/runtimes/wasm2c/gen_glue_wasm2c.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
-    DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/nr_api.h ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_glue_wasm2c.cmake
+    DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/wr_api_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_glue_wasm2c.cmake
 )
 add_custom_command(
     OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_wasi.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=src/core/wasi_functions.h" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_wasi" -P src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
+    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=src/core/wasi_functions.def" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_wasi" -P src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
-    DEPENDS ${WEBROGUE_ROOT_PATH}/src/core/wasi_functions.h ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
+    DEPENDS ${WEBROGUE_ROOT_PATH}/src/core/wasi_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
 )
 
 #headers

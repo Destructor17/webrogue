@@ -87,26 +87,26 @@ WASIObject::WASIObject(ModsRuntime *pRuntime, ResourceStorage *resourceStorage,
     : runtime(pRuntime), vfs(resourceStorage, config) {
 }
 
-NR_API_FUNCTION(int32_t, environ_get, (uint32_t ptrs, uint32_t buff)) {
+WASI_FUNCTION_IMPL(int32_t, environ_get, (uint32_t ptrs, uint32_t buff)) {
     assert(false);
     return 28;
 }
 
-NR_API_FUNCTION(int32_t, environ_sizes_get,
-                (int32_t count_offset, int32_t buffsize_offset)) {
+WASI_FUNCTION_IMPL(int32_t, environ_sizes_get,
+                   (int32_t count_offset, int32_t buffsize_offset)) {
     int32_t data = byteswap<int32_t>(0);
     WASI_CHECK(runtime->setVMData(&data, count_offset, sizeof(int32_t)));
     WASI_CHECK(runtime->setVMData(&data, buffsize_offset, sizeof(int32_t)));
     return 0;
 }
 
-NR_API_FUNCTION(int32_t, random_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, random_get, (uint32_t a, uint32_t b)) {
     return 0;
 }
 
-NR_API_FUNCTION(uint32_t, clock_time_get,
-                (uint32_t clk_id, uint64_t precision,
-                 uint32_t out_time_offset)) {
+WASI_FUNCTION_IMPL(uint32_t, clock_time_get,
+                   (uint32_t clk_id, uint64_t precision,
+                    uint32_t out_time_offset)) {
 
     // // m3ApiGetArg(__wasi_clockid_t, wasi_clk_id)
     // //     m3ApiGetArg(__wasi_timestamp_t, precision)
@@ -130,103 +130,107 @@ NR_API_FUNCTION(uint32_t, clock_time_get,
     return 0;
 }
 
-NR_API_FUNCTION(void, proc_exit, (int32_t a)) {
+WASI_FUNCTION_IMPL(void, proc_exit, (int32_t a)) {
     abort();
 }
 
-NR_API_FUNCTION(int32_t, fd_sync, (uint32_t a)) {
+WASI_FUNCTION_IMPL(int32_t, fd_sync, (uint32_t a)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_allocate, (uint32_t a, uint64_t b, uint64_t c)) {
+WASI_FUNCTION_IMPL(int32_t, fd_allocate, (uint32_t a, uint64_t b, uint64_t c)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_datasync, (uint32_t a)) {
+WASI_FUNCTION_IMPL(int32_t, fd_datasync, (uint32_t a)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_tell, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, fd_tell, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_pwrite,
-                (uint32_t a, uint32_t b, uint32_t c, uint64_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(int32_t, fd_pwrite,
+                   (uint32_t a, uint32_t b, uint32_t c, uint64_t d,
+                    uint32_t e)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, clock_res_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, clock_res_get, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_renumber, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, fd_renumber, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_pread,
-                (uint32_t a, uint32_t b, uint32_t c, uint64_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(int32_t, fd_pread,
+                   (uint32_t a, uint32_t b, uint32_t c, uint64_t d,
+                    uint32_t e)) {
     abort();
 }
-NR_API_FUNCTION(uint32_t, path_create_directory,
-                (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(uint32_t, path_create_directory,
+                   (uint32_t a, uint32_t b, uint32_t c)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, sched_yield, ()) {
+WASI_FUNCTION_IMPL(int32_t, sched_yield, ()) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_filestat_set_times,
-                (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(int32_t, fd_filestat_set_times,
+                   (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, args_sizes_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, args_sizes_get, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_filestat_set_size, (uint32_t a, uint64_t b)) {
+WASI_FUNCTION_IMPL(int32_t, fd_filestat_set_size, (uint32_t a, uint64_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, sock_recv,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                 uint32_t f)) {
+WASI_FUNCTION_IMPL(int32_t, sock_recv,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
+                    uint32_t f)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_filestat_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, fd_filestat_get, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, sock_shutdown, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, sock_shutdown, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, poll_oneoff,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(int32_t, poll_oneoff,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, path_link,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                 uint32_t f, uint32_t g)) {
+WASI_FUNCTION_IMPL(int32_t, path_link,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
+                    uint32_t f, uint32_t g)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, sock_accept, (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(int32_t, sock_accept, (uint32_t a, uint32_t b, uint32_t c)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, path_readlink,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                 uint32_t f)) {
+WASI_FUNCTION_IMPL(int32_t, path_readlink,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
+                    uint32_t f)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_advise,
-                (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(int32_t, fd_advise,
+                   (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, path_filestat_set_times,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint64_t e,
-                 uint64_t f, uint32_t g)) {
+WASI_FUNCTION_IMPL(int32_t, path_filestat_set_times,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint64_t e,
+                    uint64_t f, uint32_t g)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, args_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, args_get, (uint32_t a, uint32_t b)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, path_symlink,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(int32_t, path_symlink,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d,
+                    uint32_t e)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, sock_send,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(int32_t, sock_send,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d,
+                    uint32_t e)) {
     abort();
 }
-NR_API_FUNCTION(int32_t, fd_fdstat_set_rights,
-                (uint32_t a, uint64_t b, uint64_t c)) {
+WASI_FUNCTION_IMPL(int32_t, fd_fdstat_set_rights,
+                   (uint32_t a, uint64_t b, uint64_t c)) {
     abort();
 }
 

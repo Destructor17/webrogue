@@ -15,8 +15,9 @@ public:
     WASIObject(ModsRuntime *pRuntime, ResourceStorage *resourceStorage,
                Config *config);
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE NAME ARGS;
-#include "wasi_functions.h"
+#define WASI_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE NAME ARGS;
+#include "wasi_functions.def"
+#undef WASI_FUNCTION
 };
 } // namespace core
 } // namespace webrogue

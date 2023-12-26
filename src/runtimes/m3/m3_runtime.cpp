@@ -8,8 +8,9 @@
 #include <memory>
 #include <string>
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) extern "C" RET_TYPE NAME ARGS;
-#include "../../../mods/core/include/common/nr_api.h"
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS) extern "C" RET_TYPE NAME ARGS;
+#include "../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 
 #define _stringize(x) #x
 #define stringize(x) _stringize(x)
@@ -57,18 +58,20 @@ void M3ModsRuntime::initMods() {
         return;
     }
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
     link_helper<decltype(&core::ApiObject::NAME),                              \
                 &core::ApiObject::NAME>::linkM3Function("webrogue",            \
                                                         stringize(NAME),       \
                                                         modsModule, this);
-#include "../../../mods/core/include/common/nr_api.h"
+#include "../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WASI_FUNCTION(RET_TYPE, NAME, ARGS)                                    \
     link_helper<decltype(&core::WASIObject::NAME), &core::WASIObject::NAME>::  \
         linkM3Function("wasi_snapshot_preview1", stringize(NAME), modsModule,  \
                        this);
-#include "../../core/wasi_functions.h"
+#include "../../core/wasi_functions.def"
+#undef WASI_FUNCTION
     *wrout << "initializing mods...\n";
 
     IM3Function func;

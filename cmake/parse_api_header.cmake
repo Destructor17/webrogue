@@ -1,13 +1,14 @@
-file(READ ${NR_API_HEADER} content)
-string(REPLACE "\n" " " content "${content}")
-string(REGEX REPLACE "[\n ]+" " " content "${content}")
-string(REGEX MATCHALL "NR_API_FUNCTION\\((void|int32_t|uint32_t|int64_t|uint64_t|double), [^,]+, +\\([^\)]*\\)\\)" content "${content}")
 
 function(parse_api_header)
     set(options)
-    set(oneValueArgs FUNC_COUNT FUNC_ID FUNC_NAME RET_TYPE ARGS ARGS_WITHOUT_TYPES ARG_TYPES)
+    set(oneValueArgs FUNC_MACRO FUNC_COUNT FUNC_ID FUNC_NAME RET_TYPE ARGS ARGS_WITHOUT_TYPES ARG_TYPES)
     set(multiValueArgs)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    file(READ ${NR_API_HEADER} content)
+    string(REPLACE "\n" " " content "${content}")
+    string(REGEX REPLACE "[\n ]+" " " content "${content}")
+    string(REGEX MATCHALL "${ARG_FUNC_MACRO}\\((void|int32_t|uint32_t|int64_t|uint64_t|double), [^,]+, +\\([^\)]*\\)\\)" content "${content}")
 
     set(FUNC_ID 0)
 
@@ -38,8 +39,8 @@ function(parse_api_header)
         set(ARGS_WITHOUT_TYPES "${args_without_types}")
         #string(APPEND out_content "args_without_types: ${args_without_types}\n")
 
-        string(REGEX MATCH "NR_API_FUNCTION\\([^,]+" ret_type "${line}")
-        string(REPLACE "NR_API_FUNCTION(" "" ret_type "${ret_type}")
+        string(REGEX MATCH "${ARG_FUNC_MACRO}\\([^,]+" ret_type "${line}")
+        string(REPLACE "${ARG_FUNC_MACRO}(" "" ret_type "${ret_type}")
         #string(APPEND out_content "ret_type: ${ret_type}\n")
         set(RET_TYPE ${ret_type})
 

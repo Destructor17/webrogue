@@ -8,8 +8,9 @@
 
 extern "C" void nr_start();
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) extern "C" RET_TYPE NAME ARGS;
-#include "../../../mods/core/include/common/nr_api.h"
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS) extern "C" RET_TYPE NAME ARGS;
+#include "../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 
 #define _stringize(x) #x
 #define stringize(x) _stringize(x)
@@ -34,9 +35,10 @@ void EmbeddedModsRuntime::initMods() {
     //  needed to mark api functions as used to prevent strange linking bug
     std::vector<void *> api_functions;
     {
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
     api_functions.push_back((void *)&NAME);
-#include "../../../mods/core/include/common/nr_api.h"
+#include "../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
     };
     *wrout << "initialization started\n";
 #define mod_to_embed(name) init_mod_##name();

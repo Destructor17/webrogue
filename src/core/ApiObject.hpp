@@ -21,8 +21,9 @@ public:
     std::vector<webrogue_raw_event> rawEvents;
     ApiObject(ModsRuntime *pRuntime, Config *pConfig);
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE NAME ARGS;
-#include "../../mods/core/include/common/nr_api.h"
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS) RET_TYPE NAME ARGS;
+#include "../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 };
 } // namespace core
 } // namespace webrogue

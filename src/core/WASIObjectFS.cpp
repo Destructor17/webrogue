@@ -15,11 +15,11 @@
 namespace webrogue {
 namespace core {
 
-NR_API_FUNCTION(uint32_t, fd_close, (uint32_t fd)) {
+WASI_FUNCTION_IMPL(uint32_t, fd_close, (uint32_t fd)) {
     return vfs.close(fd) ? 0 : 8;
 }
 
-NR_API_FUNCTION(int32_t, fd_fdstat_get, (uint32_t fd, uint32_t out_offset)) {
+WASI_FUNCTION_IMPL(int32_t, fd_fdstat_get, (uint32_t fd, uint32_t out_offset)) {
     nr_wasi_fdstat_t fdstat;
     fdstat.fs_filetype = byteswap<nr_wasi_filetype_t>(3); // 4 for file
     fdstat.fs_flags = byteswap<nr_wasi_fdflags_t>(0);
@@ -32,13 +32,13 @@ NR_API_FUNCTION(int32_t, fd_fdstat_get, (uint32_t fd, uint32_t out_offset)) {
     return 0;
 }
 
-NR_API_FUNCTION(int32_t, fd_fdstat_set_flags, (int32_t a, int32_t b)) {
+WASI_FUNCTION_IMPL(int32_t, fd_fdstat_set_flags, (int32_t a, int32_t b)) {
     // TODO
     return 0;
 }
 
-NR_API_FUNCTION(int32_t, fd_prestat_dir_name,
-                (uint32_t fd, uint32_t out, uint32_t len)) {
+WASI_FUNCTION_IMPL(int32_t, fd_prestat_dir_name,
+                   (uint32_t fd, uint32_t out, uint32_t len)) {
     std::string name;
     if (!vfs.preopendDirName(fd, name)) {
         return 8;
@@ -50,7 +50,7 @@ NR_API_FUNCTION(int32_t, fd_prestat_dir_name,
     return 0;
 }
 
-NR_API_FUNCTION(int32_t, fd_prestat_get, (uint32_t fd, uint32_t out)) {
+WASI_FUNCTION_IMPL(int32_t, fd_prestat_get, (uint32_t fd, uint32_t out)) {
     std::string name;
     if (!vfs.preopendDirName(fd, name)) {
         return 8;
@@ -62,9 +62,9 @@ NR_API_FUNCTION(int32_t, fd_prestat_get, (uint32_t fd, uint32_t out)) {
     return 0;
 }
 
-NR_API_FUNCTION(int32_t, fd_read,
-                (int32_t fd, int32_t raw_wasi_iovs_offset, int32_t iovs_len,
-                 int32_t out_nread_offset)) {
+WASI_FUNCTION_IMPL(int32_t, fd_read,
+                   (int32_t fd, int32_t raw_wasi_iovs_offset, int32_t iovs_len,
+                    int32_t out_nread_offset)) {
 
     size_t hostNread = 0;
     bool hasError = false;
@@ -100,15 +100,16 @@ NR_API_FUNCTION(int32_t, fd_read,
     return hasError ? 8 : 0;
 }
 
-NR_API_FUNCTION(uint32_t, fd_readdir,
-                (uint32_t a, uint32_t b, uint32_t c, uint64_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(uint32_t, fd_readdir,
+                   (uint32_t a, uint32_t b, uint32_t c, uint64_t d,
+                    uint32_t e)) {
     assert(false);
     return 8;
 }
 
-NR_API_FUNCTION(int32_t, fd_seek,
-                (int32_t fd, int64_t offset, int32_t whence,
-                 uint32_t out_pos_offset)) {
+WASI_FUNCTION_IMPL(int32_t, fd_seek,
+                   (int32_t fd, int64_t offset, int32_t whence,
+                    uint32_t out_pos_offset)) {
     size_t hostPos;
     if (vfs.seek(fd, offset, whence, hostPos)) {
         nr_wasi_filesize_t pos = byteswap<nr_wasi_filesize_t>(hostPos);
@@ -119,9 +120,9 @@ NR_API_FUNCTION(int32_t, fd_seek,
     return 8;
 }
 
-NR_API_FUNCTION(uint32_t, fd_write,
-                (uint32_t fd, uint32_t raw_wasi_iovs_offset, uint32_t iovs_len,
-                 uint32_t out_nwritten_offset)) {
+WASI_FUNCTION_IMPL(uint32_t, fd_write,
+                   (uint32_t fd, uint32_t raw_wasi_iovs_offset,
+                    uint32_t iovs_len, uint32_t out_nwritten_offset)) {
 
     size_t hostNwritten = 0;
     bool hasError = false;
@@ -155,17 +156,18 @@ NR_API_FUNCTION(uint32_t, fd_write,
     return hasError ? 8 : 0;
 }
 
-NR_API_FUNCTION(uint32_t, path_filestat_get,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e)) {
+WASI_FUNCTION_IMPL(uint32_t, path_filestat_get,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d,
+                    uint32_t e)) {
     assert(false);
     return 8;
 }
 
-NR_API_FUNCTION(uint32_t, path_open,
-                (uint32_t dirfd, uint32_t dirflags, uint32_t in_path_offset,
-                 uint32_t path_len, uint32_t oflags, uint64_t fs_rights_base,
-                 uint64_t fs_rights_inheriting, uint32_t fs_flags,
-                 uint32_t out_fd_offset)) {
+WASI_FUNCTION_IMPL(uint32_t, path_open,
+                   (uint32_t dirfd, uint32_t dirflags, uint32_t in_path_offset,
+                    uint32_t path_len, uint32_t oflags, uint64_t fs_rights_base,
+                    uint64_t fs_rights_inheriting, uint32_t fs_flags,
+                    uint32_t out_fd_offset)) {
 
     std::vector<char> pathData;
     pathData.resize(path_len + 1);
@@ -190,19 +192,19 @@ NR_API_FUNCTION(uint32_t, path_open,
     return 0;
 }
 
-NR_API_FUNCTION(uint32_t, path_remove_directory,
-                (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(uint32_t, path_remove_directory,
+                   (uint32_t a, uint32_t b, uint32_t c)) {
     assert(false);
     return 8;
 }
-NR_API_FUNCTION(uint32_t, path_rename,
-                (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                 uint32_t f)) {
+WASI_FUNCTION_IMPL(uint32_t, path_rename,
+                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
+                    uint32_t f)) {
     assert(false);
     return 8;
 }
-NR_API_FUNCTION(uint32_t, path_unlink_file,
-                (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(uint32_t, path_unlink_file,
+                   (uint32_t a, uint32_t b, uint32_t c)) {
     assert(false);
     return 8;
 }

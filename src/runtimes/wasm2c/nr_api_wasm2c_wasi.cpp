@@ -152,10 +152,10 @@ u32 w2c_wasi__snapshot__preview1_clock_res_get(struct w2c_wasi__snapshot__previe
     return runtime->wasiObject.clock_res_get(a, b);
 }
 
-u32 w2c_wasi__snapshot__preview1_fd_renumber (struct w2c_wasi__snapshot__preview1 *env, u32 a, u32 b) {
+u32 w2c_wasi__snapshot__preview1_fd_renumber(struct w2c_wasi__snapshot__preview1 *env, u32 a, u32 b) {
     auto runtime =
         ((webrogue::runtimes::wasm2c::Wasm2cModsRuntime *)env);
-    return runtime->wasiObject.fd_renumber (a, b);
+    return runtime->wasiObject.fd_renumber(a, b);
 }
 
 u32 w2c_wasi__snapshot__preview1_fd_pread(struct w2c_wasi__snapshot__preview1 *env, u32 a, u32 b, u32 c, u64 d, u32 e) {

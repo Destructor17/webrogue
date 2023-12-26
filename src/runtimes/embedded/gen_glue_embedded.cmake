@@ -6,6 +6,7 @@ set(out_content "#include \"shared_api_object.hpp\"\n\n// clang-format off\n")
 
 foreach(func_i RANGE 1 ${num_of_funcs})
     parse_api_header(
+        FUNC_MACRO WR_API_FUNCTION
         FUNC_ID ${func_i} 
         FUNC_NAME func_name
         RET_TYPE ret_type

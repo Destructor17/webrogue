@@ -6,6 +6,7 @@ set(out_content "#include \"wasm2c_runtime.hpp\"\n\n// clang-format off\n")
 string(APPEND out_content "extern \"C\" {\n")
 foreach(func_i RANGE 1 ${num_of_funcs})
     parse_api_header(
+        FUNC_MACRO WASI_FUNCTION
         FUNC_ID ${func_i} 
         FUNC_NAME func_name
         RET_TYPE ret_type

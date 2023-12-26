@@ -21,23 +21,25 @@ WamrModsRuntime::WamrModsRuntime(
 }
 
 NativeSymbol native_symbols[] = {
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
                                                                                \
     {stringize(NAME),                                                          \
      (void *)(wrap_helper<decltype(&core::ApiObject::NAME)>::wrapFn<           \
               &core::ApiObject::NAME>),                                        \
      wrap_helper<decltype(&core::ApiObject::NAME)>::getSignature()},
-#include "../../../mods/core/include/common/nr_api.h"
+#include "../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 };
 
 NativeSymbol wasi_symbols[] = {
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WASI_FUNCTION(RET_TYPE, NAME, ARGS)                                    \
                                                                                \
     {stringize(NAME),                                                          \
      (void *)(wrap_helper<decltype(&core::WASIObject::NAME)>::wrapFn<          \
               &core::WASIObject::NAME>),                                       \
      wrap_helper<decltype(&core::WASIObject::NAME)>::getSignature()},
-#include "../../core/wasi_functions.h"
+#include "../../core/wasi_functions.def"
+#undef WASI_FUNCTION
 };
 
 void WamrModsRuntime::initMods() {

@@ -81,12 +81,13 @@ void WasmEdgeModsRuntime::initMods() {
             WasmEdge_ModuleInstanceCreate(hostName);
         WasmEdge_StringDelete(hostName);
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
     link_helper<decltype(&core::ApiObject::NAME),                              \
                 &core::ApiObject::NAME>::linkWasmedgeFunction("webrogue",      \
                                                               stringize(NAME), \
                                                               HostMod, this);
-#include "../../../../mods/core/include/common/nr_api.h"
+#include "../../../../mods/core/include/common/wr_api_functions.def"
+#undef WR_API_FUNCTION
 
         WasmEdge_StoreContext *storeCxt = WasmEdge_StoreCreate();
         WasmEdge_ExecutorContext *execCxt = WasmEdge_ExecutorCreate(NULL, NULL);
@@ -113,11 +114,12 @@ void WasmEdgeModsRuntime::initMods() {
             WasmEdge_ModuleInstanceCreate(hostName);
         WasmEdge_StringDelete(hostName);
 
-#define NR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
+#define WASI_FUNCTION(RET_TYPE, NAME, ARGS)                                    \
     link_helper<decltype(&core::WASIObject::NAME), &core::WASIObject::NAME>::  \
         linkWasmedgeFunction("wasi_snapshot_preview1", stringize(NAME),        \
                              HostMod, this);
-#include "../../core/wasi_functions.h"
+#include "../../core/wasi_functions.def"
+#undef WASI_FUNCTION
 
         WasmEdge_StoreContext *storeCxt = WasmEdge_StoreCreate();
         WasmEdge_ExecutorContext *execCxt = WasmEdge_ExecutorCreate(NULL, NULL);
