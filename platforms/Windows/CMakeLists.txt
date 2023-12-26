@@ -94,6 +94,10 @@ set(ARTIFACTS_PATH ${WEBROGUE_ROOT_PATH}/artifacts)
 
 add_custom_target(pack_artifacts 
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${ARTIFACTS_PATH}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ARTIFACTS_PATH}
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:webrogue> $<TARGET_FILE:webrogue_core> $<TARGET_FILE:webrogue_runtime_wasmedge> $<TARGET_FILE:webrogue_sdl> ${SDL2_DLLS} ${SDL2_TTF_DLLS} $<TARGET_FILE:compact_linker> ${ARTIFACTS_PATH}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${ARTIFACTS_PATH}/mods
+    COMMAND ${CMAKE_COMMAND} -E copy ./mods/core/core.wrmod ./mods/basecontent/basecontent.wrmod ${ARTIFACTS_PATH}/mods
+    
     DEPENDS webrogue_windows
 )
