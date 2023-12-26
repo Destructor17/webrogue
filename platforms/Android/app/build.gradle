@@ -1,0 +1,107 @@
+def buildAsLibrary = project.hasProperty('BUILD_AS_LIBRARY');
+def buildAsApplication = !buildAsLibrary
+if (buildAsApplication) {
+    apply plugin: 'com.android.application'
+}
+else {
+    apply plugin: 'com.android.library'
+}
+
+android {
+    compileSdkVersion 31
+    defaultConfig {
+        if (buildAsApplication) {
+            applicationId "com.webrogue"
+        }
+        minSdkVersion 16
+        targetSdkVersion 31
+        versionCode 1
+        versionName "1.0"
+        externalNativeBuild {
+            //ndkBuild {
+            //    arguments "APP_PLATFORM=android-16"
+            //    abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            //}
+            cmake {
+                targets "webrogue"
+                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+            }
+        }
+    }
+    signingConfigs {
+        release {
+            storeFile file("keystore")
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias "release"
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+
+        debug {
+            storeFile file("keystore")
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias "release"
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.all { variant ->
+        tasks["merge${variant.name.capitalize()}Assets"]
+            .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+        tasks["generate${variant.name.capitalize()}ResValues"]
+                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+        tasks["compile${variant.name.capitalize()}JavaWithJavac"]
+                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+        tasks["check${variant.name.capitalize()}DuplicateClasses"]
+                .dependsOn("externalNativeBuild${variant.name.capitalize()}")
+    }
+    if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
+        sourceSets.main {
+            jniLibs.srcDir 'libs'
+        }
+        externalNativeBuild {
+            cmake {
+                version "3.22.1"
+                path 'jni/CMakeLists.txt'
+            }
+        }
+       
+    }
+    lintOptions {
+        abortOnError false
+    }
+    buildFeatures {
+        viewBinding true
+    }
+
+    if (buildAsLibrary) {
+        libraryVariants.all { variant ->
+            variant.outputs.each { output ->
+                def outputFile = output.outputFile
+                if (outputFile != null && outputFile.name.endsWith(".aar")) {
+                    def fileName = "com.webrogue.aar";
+                    output.outputFile = new File(outputFile.parent, fileName);
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
+    implementation 'android.arch.navigation:navigation-ui:1.0.0'
+}

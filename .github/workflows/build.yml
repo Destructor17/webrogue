@@ -1,0 +1,162 @@
+name: Webrogue artifacts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build
+      run:
+        git submodule update --init --recursive --single-branch external/wasmedge/;
+        git submodule update --init --recursive --single-branch external/xz/;
+        git submodule update --init --recursive --single-branch external/dirent/;
+        git submodule update --init --recursive --single-branch external/pdcurses/;
+        ./platforms/Windows/build.ps1 Release;
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts-Windows
+        path: ./artifacts
+
+  web:
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Submodules
+      run: |
+        git submodule update --init --recursive --single-branch external/xz/
+
+    - name: Configure and build
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git
+        ./emsdk/emsdk install latest
+        ./emsdk/emsdk activate latest
+        . ./emsdk/emsdk_env.sh
+        emcmake cmake -Bplatforms/Web/homepage/build -Splatforms/Web/homepage/ -DCMAKE_BUILD_TYPE=Release
+        cmake --build platforms/Web/homepage/build/ --target pack_artifacts -j
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts-Web
+        path: |
+          ./artifacts
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './artifacts'
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+      
+  linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Submodules
+      run: |
+        git submodule update --init --recursive --single-branch external/wamr/
+        git submodule update --init --recursive --single-branch external/xz/
+        git submodule update --init --recursive --single-branch external/argparse/
+
+    - name: Apt
+      run: |
+        sudo apt update
+        sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev 
+
+    - name: Configure and build
+      run: |
+        cmake -S platforms/Linux -B platforms/Linux/build -DCMAKE_BUILD_TYPE=Release
+        cmake --build platforms/Linux/build --target pack_executable_to_artifacts -j
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts-Linux
+        path: |
+          ./artifacts
+
+  dos:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Apt
+      run: |
+        sudo apt-get install -y libfl2
+
+    - name: Submodules
+      run: |
+        git submodule update --init --recursive --single-branch external/xz/
+        git submodule update --init --recursive --single-branch external/argparse/
+        git submodule update --init --recursive --single-branch external/pdcurses/
+
+    - name: Install DJGPP toolchain
+      run: |
+        wget https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2
+        sudo tar -xjvf djgpp-linux64-gcc1220.tar.bz2 -C /usr/local/
+
+    - name: Configure and build
+      run: |
+        cmake --toolchain=djgpp_toolchain.cmake -S platforms/DOS/ -B platforms/DOS/build -DCMAKE_BUILD_TYPE=Release
+        cmake --build platforms/DOS/build --target pack_executable_to_artifacts -j
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts-DOS
+        path: |
+          ./artifacts
+
+  android:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+
+      - name: Submodules
+        run: |
+          git submodule update --init --recursive --single-branch external/wamr/
+          git submodule update --init --recursive --single-branch external/xz/
+          git submodule update --init --recursive --single-branch external/SDL/
+          git submodule update --init --recursive --single-branch external/SDL_ttf/
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build
+        run: |
+          cd platforms/Android
+          ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD=${{ secrets.ANDROID_STORE_PASSWORD }} ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }} ./gradlew --no-daemon assembleRelease
+          cd ../..
+          rm -rf artifacts
+          mkdir artifacts
+          cp ./platforms/Android/app/build/outputs/apk/release/app-release.apk artifacts/webrogue.apk
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Artifacts-Android
+          path: artifacts/webrogue.apk
