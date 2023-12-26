@@ -90,7 +90,7 @@ add_custom_command(
 add_custom_target(webrogue_windows DEPENDS webrogue webrogue_sdl pack_mods)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:8388608")
 
-set(ARTIFACTS_PATH ${CMAKE_CURRENT_SOURCE_DIR}../../artifacts)
+set(ARTIFACTS_PATH ${WEBROGUE_ROOT_PATH}/artifacts)
 
 add_custom_target(pack_artifacts 
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${ARTIFACTS_PATH}
