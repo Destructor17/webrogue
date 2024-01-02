@@ -1,4 +1,3 @@
-
 WASI_FUNCTION(int32_t, environ_get, (uint32_t ptrs, uint32_t buff))
 WASI_FUNCTION(int32_t, environ_sizes_get, (int32_t count_offset, int32_t buffsize_offset))
 WASI_FUNCTION(uint32_t, clock_time_get, (uint32_t clk_id, uint64_t precision, uint32_t out_time_offset))

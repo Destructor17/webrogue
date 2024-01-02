@@ -1,15 +1,17 @@
 #include "CompactLinking.hpp"
 #include "../linker/compact_linker.h"
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <vector>
 
 namespace webrogue {
 namespace core {
 std::shared_ptr<std::vector<uint8_t>>
-get_compactly_linked_binnaries(ModsRuntime *runtime,
-                               ResourceStorage *resourceStorage, Config *config,
-                               ConsoleStream *wrout, ConsoleStream *wrerr) {
+getCompactlyLinkedBinnaries(ModsRuntime *runtime,
+                            ResourceStorage *resourceStorage, Config *config,
+                            std::function<void()> interrupt,
+                            ConsoleStream *wrout, ConsoleStream *wrerr) {
 
     // {
     //     std::ifstream file("external/wabt/src/linking/"
@@ -56,7 +58,7 @@ get_compactly_linked_binnaries(ModsRuntime *runtime,
     }
 
     return std::make_shared<std::vector<uint8_t>>(
-        compact_link(requiredFuncs, binaries));
+        compact_link(requiredFuncs, binaries, interrupt));
 }
 } // namespace core
 } // namespace webrogue

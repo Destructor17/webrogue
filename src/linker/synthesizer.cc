@@ -790,6 +790,7 @@ Result Synthesizer::relocate() {
                 continue;
 
             Address relocatedValue;
+            interrupt();
             CHECK_RESULT(relocateOne(getRelocSemantic(reloc.type), reloc,
                                      input.get(), &relocatedValue));
             uint8_t *dataPtr = nullptr;
@@ -831,12 +832,19 @@ Result Synthesizer::synthesize(std::vector<unique_ptr<WASMModule>> *inputs,
     this->symbols = *symbols;
     this->inputs = inputs;
 
+    interrupt();
     CHECK_RESULT(synthesizeImports());
+    interrupt();
     CHECK_RESULT(synthesizeFunctions());
+    interrupt();
     CHECK_RESULT(synthesizeSignatures());
+    interrupt();
     CHECK_RESULT(synthesizeExports());
+    interrupt();
     CHECK_RESULT(synthesizeTables());
+    interrupt();
     CHECK_RESULT(synthesizeData());
+    interrupt();
 
     CHECK_RESULT(relocate());
 

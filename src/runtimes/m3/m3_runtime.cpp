@@ -27,8 +27,12 @@ M3ModsRuntime::M3ModsRuntime(webrogue::core::ConsoleStream *wrout,
 
 void M3ModsRuntime::initMods() {
 
-    linkedWasm = get_compactly_linked_binnaries(this, resourceStorage, config,
-                                                wrout, wrerr);
+    linkedWasm = core::getCompactlyLinkedBinnaries(
+        this, resourceStorage, config,
+        [this]() {
+            interrupt();
+        },
+        wrout, wrerr);
     if (!linkedWasm) {
         *wrerr << "linking failed\n";
         return;

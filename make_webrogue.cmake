@@ -142,6 +142,15 @@ set(
     ${WEBROGUE_ROOT_PATH}/src/runtimes/wasmedge/wasmedge_templates.hpp
 )
 
+set(
+    WEBROGUE_WEB_RUNTIME_SOURCE_FILES
+
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/web/imported_func_wrapper.cpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/web/imported_func_wrapper.hpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/web/web_runtime.hpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/web/web_runtime.cpp
+)
+
 if(WIN32)
     source_group(TREE ${WEBROGUE_ROOT_PATH}/src)
 endif()
@@ -357,6 +366,8 @@ function(make_webrogue_runtime)
     elseif(${ARGS_TYPE} STREQUAL WASMEDGE)
         set(SOURCES ${WEBROGUE_WASMEDGE_RUNTIME_SOURCE_FILES})
         exec_program(git ${WEBROGUE_ROOT_PATH}/external/wasmedge ARGS apply ../wasmedge.patch OUTPUT_VARIABLE v)
+    elseif(${ARGS_TYPE} STREQUAL WEB)
+        set(SOURCES ${WEBROGUE_WEB_RUNTIME_SOURCE_FILES})
     else()
         message(FATAL_ERROR "Unknown runtime type: ${ARGS_TYPE}")
     endif()

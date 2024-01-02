@@ -198,6 +198,9 @@ class Synthesizer {
 public:
     vector<unique_ptr<WASMModule>> *inputs;
 
+    std::function<void()> interrupt = []() {
+    };
+
     Address stackSize = 700000;
     const Address pageSize = 64 * 1024;
     Address totalPages;

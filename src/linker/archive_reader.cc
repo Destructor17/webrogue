@@ -175,6 +175,7 @@ Result ArchiveReader::readFilenameSection(Archive *archive, Offset offset,
     Offset lastStart = offset;
     while (cursor < offset + size) {
         if (data[cursor] == 0x0A) {
+            interrupt();
             StringRef filename = {
                 reinterpret_cast<const char *>(data.data() + lastStart),
                 cursor - lastStart};
@@ -201,11 +202,13 @@ Result ArchiveReader::readSymbolSection(Archive *archive, Offset offset,
     archive->symbols.reserve(symbolCount);
     vector<Index> offsets;
     for (Index symbolIndex = 0; symbolIndex < symbolCount; symbolIndex++) {
+        interrupt();
         Index offset;
         readInt32(offset);
         offsets.push_back(offset);
     }
     for (Index symbolIndex = 0; symbolIndex < symbolCount; symbolIndex++) {
+        interrupt();
         size_t nameLen =
             strlen(reinterpret_cast<const char *>(data.data() + cursor));
         StringRef name = {reinterpret_cast<const char *>(data.data() + cursor),
@@ -222,6 +225,7 @@ WASMModule::Symbol *ArchiveReader::getSymbol(string name) {
     return nullptr;
 }
 Result ArchiveReader::loadLazySymbol(LazySymbol *symbol) {
+    interrupt();
     ArchiveOffsetInfo &offsetInfo = symbol->archive->offsetInfo[symbol->offset];
     if (offsetInfo.isLoaded)
         return Result::Ok;
@@ -236,6 +240,7 @@ Result ArchiveReader::loadLazySymbol(LazySymbol *symbol) {
 
 Result ArchiveReader::insertSymbol(WASMModule::Symbol *symbol,
                                    set<string> const &ignoredComdats) {
+    interrupt();
     assert(symbol);
     WASMModule::Symbol *oldSymbol = getSymbol(symbol->name);
     auto setSymbol = [this, symbol]() {

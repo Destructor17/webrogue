@@ -13,9 +13,10 @@ namespace core {
 typedef std::vector<uint8_t> wasm_binnary;
 
 std::shared_ptr<std::vector<uint8_t>>
-get_compactly_linked_binnaries(ModsRuntime *runtime,
-                               ResourceStorage *resourceStorage, Config *config,
-                               ConsoleStream *wrout, ConsoleStream *wrerr);
+getCompactlyLinkedBinnaries(ModsRuntime *runtime,
+                            ResourceStorage *resourceStorage, Config *config,
+                            std::function<void()> interrupt,
+                            ConsoleStream *wrout, ConsoleStream *wrerr);
 
 } // namespace core
 } // namespace webrogue

@@ -44,8 +44,12 @@ WasmEdgeModsRuntime::WasmEdgeModsRuntime(
 
 void WasmEdgeModsRuntime::initMods() {
     spdlog::set_level(spdlog::level::err);
-    auto linkResult = core::get_compactly_linked_binnaries(
-        this, resourceStorage, config, wrout, wrerr);
+    auto linkResult = core::getCompactlyLinkedBinnaries(
+        this, resourceStorage, config,
+        [this]() {
+            interrupt();
+        },
+        wrout, wrerr);
     WasmEdge_Result res;
     confCxt = WasmEdge_ConfigureCreate();
     std::string aotCachePath = config->dataPath + "/wasmedge_aot_cache";

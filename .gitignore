@@ -31,3 +31,5 @@ mods/*/mod.a
 vfs.db
 webrogue.db
 /wasmedge_aot_cache
+cert.pem
+key.pem

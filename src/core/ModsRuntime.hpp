@@ -36,6 +36,8 @@ public:
     virtual size_t voidptrSize() = 0;
     virtual ~ModsRuntime();
 
+    void interrupt();
+
     void onFrameEnd();
 };
 

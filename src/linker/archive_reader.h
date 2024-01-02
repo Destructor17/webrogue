@@ -69,7 +69,11 @@ struct Archive {
 };
 
 class ArchiveReader {
+
 public:
+    std::function<void()> interrupt = []() {
+    };
+
     vector<unique_ptr<Archive>> archives;
     vector<vector<uint8_t>> moduleData;
     vector<unique_ptr<WASMModule>> modules;

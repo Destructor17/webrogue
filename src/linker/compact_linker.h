@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -11,4 +12,5 @@ struct LinkableFile {
 };
 
 std::vector<uint8_t> compact_link(std::vector<std::string> required_functions,
-                                  std::vector<LinkableFile> files);
+                                  std::vector<LinkableFile> files,
+                                  std::function<void()> interrupt);

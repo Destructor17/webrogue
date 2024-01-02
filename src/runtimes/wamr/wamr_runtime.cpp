@@ -43,8 +43,12 @@ NativeSymbol wasi_symbols[] = {
 };
 
 void WamrModsRuntime::initMods() {
-    auto linked = get_compactly_linked_binnaries(this, resourceStorage, config,
-                                                 wrout, wrerr);
+    auto linked = core::getCompactlyLinkedBinnaries(
+        this, resourceStorage, config,
+        [this]() {
+            interrupt();
+        },
+        wrout, wrerr);
     if (!linked || linked->size() == 0) {
         *wrerr << "linking failed\n";
         return;

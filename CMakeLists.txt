@@ -114,6 +114,13 @@ if(NOT WIN32)
     list(APPEND WEBROGUE_RUNTIMES wamr)
 endif()
 
+make_webrogue_runtime(
+    LIB_NAME webrogue_runtime_web
+    TYPE WEB
+    ${WEBROGUE_LIBRARY_TYPE}
+)
+list(APPEND WEBROGUE_RUNTIMES web)
+
 set(WEBROGUE_OUTPUTS)
 
 if(WIN32)
