@@ -93,18 +93,27 @@ void ResourceStorage::addWrmodData(std::string modName, const uint8_t *data,
     std::vector<uint8_t> decompressedData;
     decompressedData.resize(decompressedSize + 1);
     decompressedData[decompressedSize] = '\0'; // guard
+    size_t streamSize = 64 * 1024;
     struct xz_buf b;
     b.in = data;
     b.in_pos = 0;
     b.in_size = size;
     b.out = decompressedData.data();
     b.out_pos = 0;
-    b.out_size = decompressedSize;
+    b.out_size = streamSize;
     xz_crc32_init();
-    struct xz_dec *s = xz_dec_init(XZ_SINGLE, 1 << 26);
-    enum xz_ret ret = xz_dec_run(s, &b);
+    struct xz_dec *s = xz_dec_init(XZ_PREALLOC, 1 << 26);
+    enum xz_ret ret;
+    while (b.out < decompressedData.data() + decompressedSize) {
+        ret = xz_dec_run(s, &b);
+        if (ret != XZ_STREAM_END && ret != XZ_OK)
+            return;
+        b.out += b.out_pos;
+        b.out_pos = 0;
+        interrupt();
+    }
     xz_dec_end(s);
-    if (b.out_pos != decompressedSize || ret != XZ_STREAM_END) {
+    if (ret != XZ_STREAM_END) {
         return;
     }
     std::list<DecompressedFilePointer> decompressedFiles;

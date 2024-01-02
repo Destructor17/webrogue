@@ -95,6 +95,7 @@
     </a>
     or use browser that supports JavaScript
   </noscript>
+  <script src="coi-serviceworker.js"></script>
   <div style="position: relative;">
     <div>
       <div style="height: 100vh;left: 0; top: 0;">
@@ -109,6 +110,9 @@
   </div>
 
   <script type='text/javascript'>
+    if (!crossOriginIsolated)
+      window.location.reload();
+
     var statusLabelElement = document.getElementById('statusLabel');
 
     var Module = {
@@ -154,6 +158,7 @@
         if (text) console.error('[post-exception status] ' + text);
       };
     };
+
   </script>
   <script async type="text/javascript" src="./webrogue_game.js"></script>
 </body>

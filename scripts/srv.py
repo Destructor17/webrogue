@@ -7,13 +7,13 @@ os.chdir("artifacts")
 
 class MyHTTPRequestHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
-        self.send_my_headers()
+        # self.send_my_headers()
 
         SimpleHTTPRequestHandler.end_headers(self)
 
-    def send_my_headers(self):
-        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
-        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
+    # def send_my_headers(self):
+    #     self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+    #     self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
 
 httpd = HTTPServer(('localhost', 4443), MyHTTPRequestHandler)
 

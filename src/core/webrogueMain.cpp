@@ -76,6 +76,9 @@ int webrogueMain(std::shared_ptr<Output> output, runtime_maker_t runtimeMaker,
     runtime->apiObject.output = output.get();
     runtime->apiObject.consoleWriter = &consoleWriter;
     output->begin();
+    mockFS.interrupt = [&runtime]() {
+        runtime->interrupt();
+    };
     bool hasLoadingError = !loadMods(&mockFS, config, &wrout, &wrerr);
     if (!hasLoadingError) {
         std::string dbpath;

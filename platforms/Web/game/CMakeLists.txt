@@ -62,6 +62,7 @@ add_custom_target(pack_artifacts
     COMMAND ${CMAKE_COMMAND} -E make_directory ${WEBROGUE_ROOT_PATH}/artifacts
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/game/index.html ${WEBROGUE_ROOT_PATH}/artifacts/index.html
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/game/worker.js ${WEBROGUE_ROOT_PATH}/artifacts/worker.js
+    COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/game/coi-serviceworker.js ${WEBROGUE_ROOT_PATH}/artifacts/coi-serviceworker.js
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/webrogue_game.js ${WEBROGUE_ROOT_PATH}/artifacts/webrogue_game.js
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/webrogue_game.wasm ${WEBROGUE_ROOT_PATH}/artifacts/webrogue_game.wasm
     COMMAND ${CMAKE_COMMAND} -E make_directory ${WEBROGUE_ROOT_PATH}/artifacts/mods

@@ -2,6 +2,7 @@
 
 #include "ConsoleStream.hpp"
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -13,6 +14,8 @@ public:
     std::map<std::string, std::vector<uint8_t>> filemap;
     ConsoleStream *wrout;
     ConsoleStream *wrerr;
+    std::function<void()> interrupt = []() {
+    };
 
 public:
     std::string dataPath;
