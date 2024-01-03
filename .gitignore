@@ -33,3 +33,5 @@ webrogue.db
 /wasmedge_aot_cache
 cert.pem
 key.pem
+/mods/tools/wasi-sysroot
+/mods/tools/wasi-sysroot.tar.gz
