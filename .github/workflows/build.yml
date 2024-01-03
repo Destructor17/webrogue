@@ -46,15 +46,14 @@ jobs:
         
         rm -rf game_artifacts
         emcmake cmake -Bplatforms/Web/game/build -Splatforms/Web/game/ -DCMAKE_BUILD_TYPE=Release
-        cmake --build platforms/Web/game/build/ --target pack_artifacts -j 
-        mv artifacts game_artifacts 
-        mv game_artifacts/index.html game_artifacts/game.html 
+        cmake --build platforms/Web/game/build/ --target pack_artifacts -j
         
-        emcmake cmake -Bplatforms/Web/homepage/build -Splatforms/Web/homepage/ -DCMAKE_BUILD_TYPE=Release 
-        cmake --build platforms/Web/homepage/build/ --target pack_artifacts -j 
+        mv artifacts game_artifacts
         
-        mv game_artifacts/* artifacts 
-        rmdir game_artifacts 
+        emcmake cmake -Bplatforms/Web/homepage/build -Splatforms/Web/homepage/ -DCMAKE_BUILD_TYPE=Release
+        cmake --build platforms/Web/homepage/build/ --target pack_artifacts -j
+        
+        mv game_artifacts artifacts/game
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
