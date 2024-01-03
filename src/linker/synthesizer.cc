@@ -46,7 +46,7 @@ Result Synthesizer::synthesizeSignatures() {
             appendSignature(cast<FuncType>(typeEntry)->sig);
         }
     }
-    for (auto importedFunc : importedFuncs)
+    for (auto importedFunc : importSynthesizer.importedFuncs)
         appendSignature(importedFunc.signature);
     for (auto &input : *inputs)
         for (Index funcIndex = input->num_func_imports;
@@ -54,77 +54,6 @@ Result Synthesizer::synthesizeSignatures() {
             appendSignature(input->funcs[funcIndex]->decl.sig);
 
     appendSignature({}); // for __wasm_call_ctors
-    return Result::Ok;
-}
-
-void Synthesizer::appendFunctionImport(const FuncImport *import,
-                                       Index loadOrder) {
-    for (auto &importedFunc : importedFuncs)
-        if (importedFunc.fieldName == import->field_name &&
-            importedFunc.moduleName == import->module_name)
-            return;
-
-    if (import->module_name == "env")
-        for (auto &implementedFunc : implementedFuncs)
-            if ("$" + import->field_name == implementedFunc.name)
-                return;
-
-    ImportedFunc importedFunc;
-    importedFunc.fieldName = import->field_name;
-    importedFunc.moduleName = import->module_name;
-    importedFunc.signature = import->func.decl.sig;
-    importedFunc.loadOrder = loadOrder;
-    importedFuncs.push_back(importedFunc);
-}
-void Synthesizer::appendImport(Import *import) {
-    for (auto &oldImport : imports)
-        if (oldImport->module_name == import->module_name &&
-            oldImport->field_name == import->field_name)
-            return;
-    imports.push_back(import);
-}
-Result Synthesizer::synthesizeImports() {
-    for (auto &input : *inputs) {
-        Index funcIndex = 0;
-        for (auto &import : input->imports) {
-            if (import->kind() == ExternalKind::Table) {
-                assert(import->field_name == "__indirect_function_table");
-            } else if (import->kind() == ExternalKind::Func) {
-                for (auto &symbol : input->symbols)
-                    if (symbol->kind() == WASMModule::Symbol::Kind::Func) {
-                        auto *funcSymbol =
-                            cast<WASMModule::FuncSymbol>(symbol.get());
-                        if (funcSymbol->original_func_index == funcIndex) {
-                            auto *actualSymbol = symbols.at(funcSymbol->name);
-                            if (actualSymbol) {
-                                funcSymbol =
-                                    cast<WASMModule::FuncSymbol>(actualSymbol);
-                                if (!funcSymbol->defined && !funcSymbol->weak)
-                                    appendFunctionImport(
-                                        cast<FuncImport>(import),
-                                        actualSymbol->load_order);
-                            }
-                        }
-                    }
-                funcIndex++;
-            } else {
-                appendImport(import);
-            }
-        }
-    }
-    struct ImportComparator {
-        bool operator()(Import *&x, Import *&y) const {
-            return x->field_name > y->field_name;
-        }
-    };
-    sort(imports.begin(), imports.end(), ImportComparator());
-    struct ImportedFuncComparator {
-        bool operator()(ImportedFunc &x, ImportedFunc &y) const {
-            return x.loadOrder < y.loadOrder;
-        }
-    };
-    sort(importedFuncs.begin(), importedFuncs.end(), ImportedFuncComparator());
-
     return Result::Ok;
 }
 
@@ -137,7 +66,9 @@ Result Synthesizer::synthesizeExports() {
             Index newIndex;
             CHECK_RESULT(relocateFunc(funcSymbol->original_func_index,
                                       funcSymbol->module_, &newIndex));
-            auto &func = implementedFuncs[newIndex - importedFuncs.size()];
+            auto &func =
+                implementedFuncs[newIndex -
+                                 importSynthesizer.importedFuncs.size()];
             func.isExported = true;
             func.exportName = symbol.second->name;
         }
@@ -185,7 +116,7 @@ Result Synthesizer::relocateFunc(Index originalIndex, const WASMModule *origin,
         auto &implementedFunc = implementedFuncs[index];
         if (implementedFunc.origin == origin &&
             implementedFunc.originFuncIndex == originalIndex) {
-            *outIndex = index + importedFuncs.size();
+            *outIndex = index + importSynthesizer.importedFuncs.size();
 
             return Result::Ok;
         }
@@ -206,8 +137,9 @@ Result Synthesizer::relocateFunc(Index originalIndex, const WASMModule *origin,
     }
     if (!funcImport)
         return Result::Error;
-    for (Index index = 0; index < importedFuncs.size(); index++) {
-        auto &importedFunc = importedFuncs[index];
+    for (Index index = 0; index < importSynthesizer.importedFuncs.size();
+         index++) {
+        auto &importedFunc = importSynthesizer.importedFuncs[index];
         if (importedFunc.fieldName == funcImport->field_name &&
             importedFunc.moduleName == funcImport->module_name) {
             *outIndex = index;
@@ -234,7 +166,7 @@ Result Synthesizer::relocateFunc(Index originalIndex, const WASMModule *origin,
                     implementedFuncName[0] == '$')
                     implementedFuncName = implementedFuncName.substr(1);
                 if (implementedFuncName == funcName) {
-                    *outIndex = index + importedFuncs.size();
+                    *outIndex = index + importSynthesizer.importedFuncs.size();
 
                     return Result::Ok;
                 }
@@ -362,7 +294,8 @@ inline Result Synthesizer::synthesizeFunctions() {
             unreachableFunc.name = funcSymbol->name;
 
             funcSymbol->new_func_index =
-                importedFuncs.size() + implementedFuncs.size();
+                importSynthesizer.importedFuncs.size() +
+                implementedFuncs.size();
             implementedFuncs.push_back(unreachableFunc);
         }
     }
@@ -383,7 +316,8 @@ inline Result Synthesizer::synthesizeFunctions() {
                     foundName = true;
                     func.name = funcSymbol->name;
                     funcSymbol->new_func_index =
-                        importedFuncs.size() + implementedFuncs.size();
+                        importSynthesizer.importedFuncs.size() +
+                        implementedFuncs.size();
                     break;
                 }
             }
@@ -416,11 +350,13 @@ inline Result Synthesizer::synthesizeFunctions() {
             CHECK_RESULT(relocateFunc(funcSymbol->original_func_index,
                                       funcSymbol->module_, &funcIndex));
             FuncSignature signature;
-            if (funcIndex < importedFuncs.size())
+            if (funcIndex < importSynthesizer.importedFuncs.size())
                 signature = implementedFuncs[funcIndex].signature;
             else
-                signature = implementedFuncs[funcIndex - importedFuncs.size()]
-                                .signature;
+                signature =
+                    implementedFuncs[funcIndex -
+                                     importSynthesizer.importedFuncs.size()]
+                        .signature;
 
             callCtorsBodyStream.WriteU8(0x10);
             WriteU32Leb128(&callCtorsBodyStream, funcIndex, "");
@@ -833,7 +769,8 @@ Result Synthesizer::synthesize(std::vector<unique_ptr<WASMModule>> *inputs,
     this->inputs = inputs;
 
     interrupt();
-    CHECK_RESULT(synthesizeImports());
+    CHECK_RESULT(importSynthesizer.synthesizeImports(inputs, symbols,
+                                                     &implementedFuncs));
     interrupt();
     CHECK_RESULT(synthesizeFunctions());
     interrupt();
@@ -855,7 +792,7 @@ Result Synthesizer::synthesize(std::vector<unique_ptr<WASMModule>> *inputs,
         typeField->type = std::move(funcEntry);
         outputModule->AppendField(std::move(typeField));
     }
-    for (auto importedFunc : importedFuncs) {
+    for (auto importedFunc : importSynthesizer.importedFuncs) {
         auto importField = make_unique<ImportModuleField>();
         auto import = make_unique<FuncImport>(importedFunc.fieldName);
         import->func.decl.sig = importedFunc.signature;
@@ -895,8 +832,8 @@ Result Synthesizer::synthesize(std::vector<unique_ptr<WASMModule>> *inputs,
             auto exportField = make_unique<ExportModuleField>();
             exportField->export_.kind = ExternalKind::Func;
             exportField->export_.name = implementedFunc.exportName;
-            exportField->export_.var =
-                Var(implementedFuncIndex + importedFuncs.size());
+            exportField->export_.var = Var(
+                implementedFuncIndex + importSynthesizer.importedFuncs.size());
             outputModule->AppendField(std::move(exportField));
         }
     }

@@ -1,5 +1,5 @@
 #include "CompactLinking.hpp"
-#include "../linker/compact_linker.h"
+#include "../linker/compact-linker.h"
 #include <cstdint>
 #include <functional>
 #include <memory>

@@ -1,5 +1,5 @@
-#include "compact_linker.h"
-#include "archive_reader.h"
+#include "compact-linker.h"
+#include "archive-reader.h"
 #include "synthesizer.h"
 #include "write_file.h"
 #include <iostream>

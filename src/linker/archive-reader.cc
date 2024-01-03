@@ -1,5 +1,4 @@
-
-#include "archive_reader.h"
+#include "archive-reader.h"
 using namespace std;
 
 namespace wabt {

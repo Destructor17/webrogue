@@ -1,9 +1,10 @@
 set(
     WABT_SOURCES 
     
-    compact_linker.cc
-    archive_reader.cc
+    compact-linker.cc
+    archive-reader.cc
     synthesizer.cc
+    synthesizer/import-synthesizer.cc
 
     binary-reader-ir.cc
     binary-reader.cc

@@ -9,6 +9,7 @@
 #include "multikey_sort.h"
 #include "result.h"
 #include "stream.h"
+#include "synthesizer/import-synthesizer.h"
 #include "type.h"
 #include "xxhash.h"
 #include <algorithm>
@@ -173,29 +174,9 @@ inline RelocForm getRelocForm(RelocType relocType) {
     abort();
 }
 
-class ImportedFunc {
-public:
-    StringRef fieldName;
-    StringRef moduleName;
-    FuncSignature signature;
-
-    Index loadOrder;
-};
-
-class ImplementedFunc {
-public:
-    string name;
-    FuncSignature signature;
-    const WASMModule *origin;
-    Index originFuncIndex;
-    bool isExported = false;
-    string exportName;
-    bool syntesized = false;
-    vector<uint8_t> syntesizedCode;
-};
-
 class Synthesizer {
 public:
+    ImportSynthesizer importSynthesizer;
     vector<unique_ptr<WASMModule>> *inputs;
 
     std::function<void()> interrupt = []() {
@@ -206,13 +187,11 @@ public:
     Address totalPages;
 
     vector<FuncSignature> signatures;
-    vector<Import *> imports;
 
     vector<Index> indirectFuncTable;
 
     map<string, WASMModule::Symbol *> symbols;
 
-    vector<ImportedFunc> importedFuncs;
     vector<ImplementedFunc> implementedFuncs;
     set<string> weakFuncNames;
 
@@ -232,10 +211,6 @@ public:
     void appendSignature(FuncSignature signature);
 
     Result synthesizeSignatures();
-
-    void appendFunctionImport(const FuncImport *import, Index loadOrder);
-    void appendImport(Import *import);
-    Result synthesizeImports();
 
     Result synthesizeExports();
 
