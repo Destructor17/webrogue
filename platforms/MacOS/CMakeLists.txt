@@ -32,7 +32,7 @@ make_webrogue_core(
     STATIC
 )
 
-set(WEBROGUE_COMPACT_LINKER_SHARED OFF)
+set(WEBROGUE_COMPACT_LINKER_STATIC OFF)
 include(${WEBROGUE_ROOT_PATH}/cmake/make_compact_linker.cmake)
 target_link_libraries(webrogue_core compact_linker)
 
