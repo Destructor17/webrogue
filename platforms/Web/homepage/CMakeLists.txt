@@ -24,6 +24,13 @@ make_webrogue_core(
     STATIC
     NO_WASM
 )
+
+#libuv
+set(LIBUV_BUILD_SHARED OFF)
+add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
+target_link_libraries(webrogue_core uv)
+target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+
 target_link_libraries(webrogue_output_sdl webrogue_core)
 make_webrogue_runtime(
     LIB_NAME webrogue_runtime_embedded

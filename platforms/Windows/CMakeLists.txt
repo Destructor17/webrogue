@@ -37,6 +37,12 @@ set(WEBROGUE_COMPACT_LINKER_SHARED ON)
 include(${WEBROGUE_ROOT_PATH}/cmake/make_compact_linker.cmake)
 target_link_libraries(webrogue_core compact_linker)
 
+#libuv
+set(LIBUV_BUILD_SHARED ON)
+add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
+target_link_libraries(webrogue_core uv)
+target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+
 make_webrogue_runtime(
     LIB_NAME webrogue_runtime_wasmedge
     TYPE WASMEDGE
@@ -95,7 +101,7 @@ set(ARTIFACTS_PATH ${WEBROGUE_ROOT_PATH}/artifacts)
 add_custom_target(pack_artifacts 
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${ARTIFACTS_PATH}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ARTIFACTS_PATH}
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:webrogue> $<TARGET_FILE:webrogue_core> $<TARGET_FILE:webrogue_runtime_wasmedge> $<TARGET_FILE:webrogue_sdl> ${SDL2_DLLS} ${SDL2_TTF_DLLS} $<TARGET_FILE:compact_linker> ${ARTIFACTS_PATH}
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:webrogue> $<TARGET_FILE:webrogue_core> $<TARGET_FILE:webrogue_runtime_wasmedge> $<TARGET_FILE:webrogue_sdl> $<TARGET_FILE:uv> ${SDL2_DLLS} ${SDL2_TTF_DLLS} $<TARGET_FILE:compact_linker> ${ARTIFACTS_PATH}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${ARTIFACTS_PATH}/mods
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/mods/core/core.wrmod ${WEBROGUE_ROOT_PATH}/mods/basecontent/basecontent.wrmod ${ARTIFACTS_PATH}/mods
     

@@ -72,7 +72,7 @@ endif()
 add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
 
 target_link_libraries(webrogue_core uv)
-target_include_directories(webrogue_core PUBLIC ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
 
 add_library(core_wrmod ${WEBROGUE_LIBRARY_TYPE} 
     ${WEBROGUE_ROOT_PATH}/embedded_resources/core_wrmod.c ${WEBROGUE_ROOT_PATH}/embedded_resources/core_wrmod.h

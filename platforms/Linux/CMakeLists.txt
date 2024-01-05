@@ -26,6 +26,13 @@ make_webrogue_core(
     STATIC
 )
 target_link_libraries(webrogue_core compact_linker)
+
+#libuv
+set(LIBUV_BUILD_SHARED OFF)
+add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
+target_link_libraries(webrogue_core uv)
+target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+
 target_link_libraries(webrogue_output_ncurses ncurses)
 make_webrogue_runtime(
     LIB_NAME webrogue_runtime_wamr

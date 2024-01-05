@@ -12,7 +12,6 @@ set(WEBROGUE_ROOT_PATH ${CMAKE_CURRENT_LIST_DIR}/../..)
 set(WEBROGUE_MOD_NAMES core basecontent)
 include(../../make_webrogue.cmake)
 
-
 make_webrogue_output(
     LIB_NAME webrogue_output_sdl
     TYPE SDL
@@ -32,6 +31,13 @@ make_webrogue_core(
     LIB_NAME webrogue_core
     STATIC
 )
+
+#libuv
+set(LIBUV_BUILD_SHARED OFF)
+add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
+target_link_libraries(webrogue_core uv)
+target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+
 add_subdirectory(${WEBROGUE_ROOT_PATH}/platforms/MacOS/wamr wamr)
 make_webrogue_runtime(
     LIB_NAME webrogue_runtime_wamr

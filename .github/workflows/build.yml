@@ -16,6 +16,8 @@ jobs:
         git submodule update --init --recursive --single-branch external/xz/;
         git submodule update --init --recursive --single-branch external/dirent/;
         git submodule update --init --recursive --single-branch external/pdcurses/;
+        git submodule update --init --recursive --single-branch external/libuv/;
+        git submodule update --init --recursive --single-branch external/uvwasi/;
         ./platforms/Windows/build.ps1 Release;
 
     - uses: actions/upload-artifact@v3
@@ -36,6 +38,8 @@ jobs:
     - name: Submodules
       run: |
         git submodule update --init --recursive --single-branch external/xz/
+        git submodule update --init --recursive --single-branch external/libuv/
+        git submodule update --init --recursive --single-branch external/uvwasi/
 
     - name: Configure and build
       run: |
@@ -85,6 +89,8 @@ jobs:
         git submodule update --init --recursive --single-branch external/wamr/
         git submodule update --init --recursive --single-branch external/xz/
         git submodule update --init --recursive --single-branch external/argparse/
+        git submodule update --init --recursive --single-branch external/libuv/
+        git submodule update --init --recursive --single-branch external/uvwasi/
 
     - name: Apt
       run: |
@@ -117,6 +123,8 @@ jobs:
         git submodule update --init --recursive --single-branch external/xz/
         git submodule update --init --recursive --single-branch external/argparse/
         git submodule update --init --recursive --single-branch external/pdcurses/
+        git submodule update --init --recursive --single-branch external/libuv/
+        git submodule update --init --recursive --single-branch external/uvwasi/
 
     - name: Install DJGPP toolchain
       run: |
@@ -152,6 +160,8 @@ jobs:
           git submodule update --init --recursive --single-branch external/xz/
           git submodule update --init --recursive --single-branch external/SDL/
           git submodule update --init --recursive --single-branch external/SDL_ttf/
+          git submodule update --init --recursive --single-branch external/libuv/
+          git submodule update --init --recursive --single-branch external/uvwasi/
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
