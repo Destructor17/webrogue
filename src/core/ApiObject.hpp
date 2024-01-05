@@ -3,6 +3,7 @@
 #include "ConsoleWriter.hpp"
 #include "DB.hpp"
 #include "Output.hpp"
+#include "wasm_types.hpp"
 #include <cstdint>
 #include <memory>
 #include <vector>

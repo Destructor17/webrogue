@@ -154,6 +154,20 @@ set(
     ${WEBROGUE_ROOT_PATH}/src/runtimes/web/web_runtime.cpp
 )
 
+set(
+    UVWASI_SOURCE_FILES
+
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/clocks.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/fd_table.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/path_resolver.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/poll_oneoff.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/sync_helpers.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/uv_mapping.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/uvwasi.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/wasi_rights.c
+    ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/wasi_serdes.c
+)
+
 if(WIN32)
     source_group(TREE ${WEBROGUE_ROOT_PATH}/src)
 endif()
@@ -448,14 +462,15 @@ function(make_webrogue_core)
     set(
         SOURCES 
         ${WEBROGUE_CORE_SOURCE_FILES}
+        ${UVWASI_SOURCE_FILES}
     )
     add_library(${ARGS_LIB_NAME} ${LIB_TYPE} ${SOURCES})
     add_dependencies(${ARGS_LIB_NAME} pack_mods_to_build_dir)
-    #xz
     target_include_directories(
         ${ARGS_LIB_NAME} PRIVATE 
         ${WEBROGUE_ROOT_PATH}/external/xz/userspace 
         ${WEBROGUE_ROOT_PATH}/external/xz/linux/include/linux
+        ${WEBROGUE_ROOT_PATH}/external/uvwasi/include
     )
 endfunction()
 

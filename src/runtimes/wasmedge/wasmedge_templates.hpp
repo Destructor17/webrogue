@@ -7,6 +7,7 @@
 #include <string>
 
 namespace webrogue {
+using namespace core;
 namespace runtimes {
 namespace wasmedge {
 
@@ -65,30 +66,30 @@ using is_enum_of_t = typename std::enable_if<
     std::is_same<std::underlying_type_t<T>, U>::value>::type;
 
 template <typename T>
-struct wasmedge_glue_type_to_sig<T, is_enum_of_t<T, int32_t>>
+struct wasmedge_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI32>>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI32> {};
 
 template <class T>
-struct wasmedge_glue_type_to_sig<T, is_enum_of_t<T, int64_t>>
+struct wasmedge_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI64>>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI64> {};
 
 template <>
-struct wasmedge_glue_type_to_sig<int32_t>
+struct wasmedge_glue_type_to_sig<WASMRawI32>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI32> {};
 template <>
-struct wasmedge_glue_type_to_sig<uint32_t>
+struct wasmedge_glue_type_to_sig<WASMRawU32>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI32> {};
 template <>
-struct wasmedge_glue_type_to_sig<int64_t>
+struct wasmedge_glue_type_to_sig<WASMRawI64>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI64> {};
 template <>
-struct wasmedge_glue_type_to_sig<uint64_t>
+struct wasmedge_glue_type_to_sig<WASMRawU64>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenI64> {};
 template <>
-struct wasmedge_glue_type_to_sig<float>
+struct wasmedge_glue_type_to_sig<WASMRawF32>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenF32> {};
 template <>
-struct wasmedge_glue_type_to_sig<double>
+struct wasmedge_glue_type_to_sig<WASMRawF64>
     : WasmedgeGlueSig<WasmEdge_ValTypeGenF64> {};
 template <typename T>
 struct wasmedge_glue_type_to_sig<T *>
@@ -170,46 +171,46 @@ struct func_helper<Ret (Obj::*)(Args...), method> {
 
 template <typename T> struct arg_stack_helper;
 
-template <> struct arg_stack_helper<int32_t> {
+template <> struct arg_stack_helper<WASMRawI32> {
     static inline void
-    argFromStack(int32_t &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawI32 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetI32(in[argI]);
+        dest = WASMRawI32::make(WasmEdge_ValueGetI32(in[argI]));
     }
 };
-template <> struct arg_stack_helper<uint32_t> {
+template <> struct arg_stack_helper<WASMRawU32> {
     static inline void
-    argFromStack(uint32_t &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawU32 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetI32(in[argI]);
+        dest = WASMRawU32::make(WasmEdge_ValueGetI32(in[argI]));
     }
 };
-template <> struct arg_stack_helper<int64_t> {
+template <> struct arg_stack_helper<WASMRawI64> {
     static inline void
-    argFromStack(int64_t &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawI64 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetI64(in[argI]);
+        dest = WASMRawI64::make(WasmEdge_ValueGetI64(in[argI]));
     }
 };
-template <> struct arg_stack_helper<uint64_t> {
+template <> struct arg_stack_helper<WASMRawU64> {
     static inline void
-    argFromStack(uint64_t &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawU64 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetI64(in[argI]);
+        dest = WASMRawU64::make(WasmEdge_ValueGetI64(in[argI]));
     }
 };
-template <> struct arg_stack_helper<float> {
+template <> struct arg_stack_helper<WASMRawF32> {
     static inline void
-    argFromStack(float &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawF32 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetF32(in[argI]);
+        dest = WASMRawF32::make(WasmEdge_ValueGetF32(in[argI]));
     }
 };
-template <> struct arg_stack_helper<double> {
+template <> struct arg_stack_helper<WASMRawF64> {
     static inline void
-    argFromStack(double &dest, const WasmEdge_Value *in, size_t argI,
+    argFromStack(WASMRawF64 &dest, const WasmEdge_Value *in, size_t argI,
                  const WasmEdge_CallingFrameContext *callFrameCxt) {
-        dest = WasmEdge_ValueGetF64(in[argI]);
+        dest = WASMRawF64::make(WasmEdge_ValueGetF64(in[argI]));
     }
 };
 template <> struct arg_stack_helper<void *> {
@@ -255,45 +256,45 @@ struct return_helper<void, Func, ArgsTuple> {
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<int32_t, Func, ArgsTuple> {
+struct return_helper<WASMRawI32, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenI32(call(func, args));
+        out[0] = WasmEdge_ValueGenI32(call(func, args).get());
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<uint32_t, Func, ArgsTuple> {
+struct return_helper<WASMRawU32, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenI32(call(func, args));
+        out[0] = WasmEdge_ValueGenI32(call(func, args).get());
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<int64_t, Func, ArgsTuple> {
+struct return_helper<WASMRawI64, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenI64(call(func, args));
+        out[0] = WasmEdge_ValueGenI64(call(func, args).get());
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<uint64_t, Func, ArgsTuple> {
+struct return_helper<WASMRawU64, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenI64(call(func, args));
+        out[0] = WasmEdge_ValueGenI64(call(func, args).get());
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<float, Func, ArgsTuple> {
+struct return_helper<WASMRawF32, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenF32(call(func, args));
+        out[0] = WasmEdge_ValueGenF32(call(func, args).get());
     }
 };
 template <typename Func, typename ArgsTuple>
-struct return_helper<double, Func, ArgsTuple> {
+struct return_helper<WASMRawF64, Func, ArgsTuple> {
     inline static void callAndReturn(Func func, ArgsTuple args,
                                      WasmEdge_Value *out) {
-        out[0] = WasmEdge_ValueGenF64(call(func, args));
+        out[0] = WasmEdge_ValueGenF64(call(func, args).get());
     }
 };
 // wrap helper

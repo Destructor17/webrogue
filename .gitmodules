@@ -36,3 +36,9 @@
 [submodule "external/wabt"]
 	path = external/wabt
 	url = https://github.com/WebAssembly/wabt.git
+[submodule "external/uvwasi"]
+	path = external/uvwasi
+	url = https://github.com/nodejs/uvwasi.git
+[submodule "external/libuv"]
+	path = external/libuv
+	url = https://github.com/libuv/libuv.git

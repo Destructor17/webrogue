@@ -61,6 +61,19 @@ make_webrogue_core(
     ${WEBROGUE_LIBRARY_TYPE}
 )
 
+#libuv
+if(${WEBROGUE_LIBRARY_TYPE} STREQUAL STATIC)
+    set(LIBUV_BUILD_SHARED OFF)
+elseif(${WEBROGUE_LIBRARY_TYPE} STREQUAL SHARED)
+    set(LIBUV_BUILD_SHARED ON)
+else()
+    message(FATAL_ERROR)
+endif()    
+add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
+
+target_link_libraries(webrogue_core uv)
+target_include_directories(webrogue_core PUBLIC ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+
 add_library(core_wrmod ${WEBROGUE_LIBRARY_TYPE} 
     ${WEBROGUE_ROOT_PATH}/embedded_resources/core_wrmod.c ${WEBROGUE_ROOT_PATH}/embedded_resources/core_wrmod.h
 )

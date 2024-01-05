@@ -2,6 +2,7 @@
 #include "Config.hpp"
 #include "ModsRuntime.hpp"
 #include "byteswap.hpp"
+#include "wasm_types.hpp"
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
@@ -18,19 +19,19 @@ ApiObject::ApiObject(ModsRuntime *pRuntime, Config *pConfig)
 
 // rendering
 
-WR_API_FUNCTION_IMPL(int32_t, nr_get_render_width, ()) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_get_render_width, ()) {
     if (!runtime->isInitialized) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    return output->size().x;
+    return WASMRawI32::make(output->size().x);
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_get_render_height, ()) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_get_render_height, ()) {
     if (!runtime->isInitialized) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    return output->size().y;
+    return WASMRawI32::make(output->size().y);
 }
 WR_API_FUNCTION_IMPL(void, nr_start_color, ()) {
     if (!runtime->isInitialized) {
@@ -39,53 +40,54 @@ WR_API_FUNCTION_IMPL(void, nr_start_color, ()) {
     }
     output->startColor();
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_get_color_pairs_count, ()) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_get_color_pairs_count, ()) {
     if (!runtime->isInitialized) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    return output->getColorPairsCount();
+    return WASMRawI32::make(output->getColorPairsCount());
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_get_colors_count, ()) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_get_colors_count, ()) {
     if (!runtime->isInitialized) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    return output->getColorsCount();
+    return WASMRawI32::make(output->getColorsCount());
 }
 WR_API_FUNCTION_IMPL(void, nr_set_color,
-                     (int32_t color, int32_t r, int32_t g, int32_t b)) {
+                     (WASMRawI32 color, WASMRawI32 r, WASMRawI32 g,
+                      WASMRawI32 b)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
-    output->setColor(color, r, g, b);
+    output->setColor(color.get(), r.get(), g.get(), b.get());
 }
 WR_API_FUNCTION_IMPL(void, nr_set_color_pair,
-                     (int32_t color_pair, int32_t fg, int32_t bg)) {
+                     (WASMRawI32 color_pair, WASMRawI32 fg, WASMRawI32 bg)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
-    output->setColorPair(color_pair, fg, bg);
+    output->setColorPair(color_pair.get(), fg.get(), bg.get());
 }
 WR_API_FUNCTION_IMPL(void, nr_render_set_screen_data,
-                     (uint64_t in_buff_offset, int64_t size)) {
+                     (WASMRawU64 in_buff_offset, WASMRawI64 size)) {
 
-    if (size != output->size().x * output->size().y) {
+    if (size.get() != output->size().x * output->size().y) {
         assert(false);
         return;
     }
-    if (!runtime->getVMData(output->getBuffer(), in_buff_offset,
-                            size * sizeof(nr_glyph))) {
+    if (!runtime->getVMData(output->getBuffer(), in_buff_offset.get(),
+                            size.get() * sizeof(nr_glyph))) {
         assert(false);
         return;
     }
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_interrupt, ()) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_interrupt, ()) {
     if (!runtime->isInitialized) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
     webrogue_event consoleWriterExitEvent = {webrogue_event_type::None, 0, 0};
     output->endFrame();
@@ -111,7 +113,7 @@ WR_API_FUNCTION_IMPL(int32_t, nr_interrupt, ()) {
             consoleWriterExitEvent = consoleWriter->present();
         } else {
             if (!rawEvents.empty()) {
-                return rawEvents.size();
+                return WASMRawI32::make(rawEvents.size());
             }
             output->lazyEnd();
         }
@@ -119,17 +121,17 @@ WR_API_FUNCTION_IMPL(int32_t, nr_interrupt, ()) {
 }
 
 WR_API_FUNCTION_IMPL(void, nr_copy_events,
-                     (uint64_t out_buff_offset, int64_t size)) {
+                     (WASMRawU64 out_buff_offset, WASMRawI64 size)) {
     if (!runtime->isInitialized) {
         assert(false);
         return;
     }
-    if (size != rawEvents.size()) {
+    if (size.get() != rawEvents.size()) {
         assert(false);
         return;
     }
-    if (!runtime->setVMData(rawEvents.data(), out_buff_offset,
-                            size * sizeof(webrogue_raw_event))) {
+    if (!runtime->setVMData(rawEvents.data(), out_buff_offset.get(),
+                            size.get() * sizeof(webrogue_raw_event))) {
         assert(false);
         return;
     }
@@ -138,68 +140,71 @@ WR_API_FUNCTION_IMPL(void, nr_copy_events,
 // debug
 
 WR_API_FUNCTION_IMPL(void, nr_debug_print,
-                     (uint64_t in_buff_offset, int64_t size)) {
+                     (WASMRawU64 in_buff_offset, WASMRawI64 size)) {
     std::vector<char> hostData;
-    hostData.resize(size + 1);
-    if (!runtime->getVMData(hostData.data(), in_buff_offset, size)) {
+    hostData.resize(size.get() + 1);
+    if (!runtime->getVMData(hostData.data(), in_buff_offset.get(),
+                            size.get())) {
         assert(false);
         return;
     }
-    hostData[size] = '\0';
+    hostData[size.get()] = '\0';
     std::string hostString = hostData.data();
     *runtime->wrout << hostString;
 }
 
 // sqlite
 
-WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_errmsg_size, ()) {
-    return strlen(sqlite3_errmsg(db->getDb()));
+WR_API_FUNCTION_IMPL(WASMRawI64, nr_sqlite3_errmsg_size, ()) {
+    return WASMRawI64::make(strlen(sqlite3_errmsg(db->getDb())));
 }
-WR_API_FUNCTION_IMPL(void, nr_sqlite3_errmsg_get, (uint64_t out_err_offset)) {
+WR_API_FUNCTION_IMPL(void, nr_sqlite3_errmsg_get, (WASMRawU64 out_err_offset)) {
     const char *err = sqlite3_errmsg(db->getDb());
     size_t len = strlen(err);
-    if (!runtime->setVMData(err, out_err_offset, len + 1)) {
+    if (!runtime->setVMData(err, out_err_offset.get(), len + 1)) {
         assert(false);
         return;
     }
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_prepare_v2,
-                     (uint64_t in_zSql_offset, int64_t zSql_size,
-                      uint64_t out_ppStmt_offset, uint64_t out_pzTail_offset)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_prepare_v2,
+                     (WASMRawU64 in_zSql_offset, WASMRawI64 zSql_size,
+                      WASMRawU64 out_ppStmt_offset,
+                      WASMRawU64 out_pzTail_offset)) {
     std::vector<char> zSql;
-    zSql.resize(zSql_size + 1);
+    zSql.resize(zSql_size.get() + 1);
 
-    if (!runtime->getVMData(zSql.data(), in_zSql_offset, zSql_size)) {
+    if (!runtime->getVMData(zSql.data(), in_zSql_offset.get(),
+                            zSql_size.get())) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    zSql[zSql_size] = '\0';
+    zSql[zSql_size.get()] = '\0';
 
     const char *hostPzTail = nullptr;
     int64_t stmtId;
 
     int result = sqlite3_prepare_v2(
-        db->getDb(), zSql.data(), zSql_size, db->stmtNew(&stmtId),
-        out_pzTail_offset == 0 ? &hostPzTail : nullptr);
-    if (out_pzTail_offset != 0) {
-        auto pzTailResult = in_zSql_offset + (hostPzTail - zSql.data());
+        db->getDb(), zSql.data(), zSql_size.get(), db->stmtNew(&stmtId),
+        out_pzTail_offset.get() == 0 ? &hostPzTail : nullptr);
+    if (out_pzTail_offset.get() != 0) {
+        auto pzTailResult = in_zSql_offset.get() + (hostPzTail - zSql.data());
         switch (runtime->voidptrSize()) {
         case 4: {
-            uint32_t pztail = byteswap<uint32_t>(pzTailResult);
-            if (!runtime->setVMData(&pztail, out_pzTail_offset,
-                                    sizeof(uint32_t))) {
+            WASMRawU32 pztail = WASMRawU32::make(pzTailResult);
+            if (!runtime->setVMData(&pztail, out_pzTail_offset.get(),
+                                    sizeof(WASMRawU32))) {
                 assert(false);
-                return -1;
+                return WASMRawI32::make(-1);
             }
             break;
         }
 
         case 8: {
-            uint64_t pztail = byteswap<uint32_t>(pzTailResult);
-            if (!runtime->setVMData(&pztail, out_pzTail_offset,
-                                    sizeof(uint64_t))) {
+            WASMRawU64 pztail = WASMRawU64::make(pzTailResult);
+            if (!runtime->setVMData(&pztail, out_pzTail_offset.get(),
+                                    sizeof(WASMRawU64))) {
                 assert(false);
-                return -1;
+                return WASMRawI32::make(-1);
             }
             break;
         }
@@ -208,124 +213,140 @@ WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_prepare_v2,
     if (result != SQLITE_OK)
         db->stmtDelete(stmtId);
     else {
-        stmtId = byteswap<int64_t>(stmtId);
-        if (!runtime->setVMData(&stmtId, out_ppStmt_offset, sizeof(int64_t))) {
+        WASMRawI64 wasmStmtId = WASMRawI64::make(stmtId);
+        if (!runtime->setVMData(&wasmStmtId, out_ppStmt_offset.get(),
+                                sizeof(WASMRawI64))) {
             assert(false);
-            return -1;
+            return WASMRawI32::make(-1);
         }
     }
-    return result;
+    return WASMRawI32::make(result);
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_step, (int64_t stmt)) {
-    return sqlite3_step(db->stmtById(stmt));
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_step, (WASMRawI64 stmt)) {
+    return WASMRawI32::make(sqlite3_step(db->stmtById(stmt.get())));
 }
-WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_last_insert_rowid, ()) {
-    return sqlite3_last_insert_rowid(db->getDb());
+WR_API_FUNCTION_IMPL(WASMRawI64, nr_sqlite3_last_insert_rowid, ()) {
+    return WASMRawI64::make(sqlite3_last_insert_rowid(db->getDb()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_changes, ()) {
-    return sqlite3_changes(db->getDb());
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_changes, ()) {
+    return WASMRawI32::make(sqlite3_changes(db->getDb()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_int,
-                     (int64_t stmt, int32_t iCol)) {
-    return sqlite3_column_int(db->stmtById(stmt), iCol);
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_column_int,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
+    return WASMRawI32::make(
+        sqlite3_column_int(db->stmtById(stmt.get()), iCol.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_type,
-                     (int64_t stmt, int32_t iCol)) {
-    return sqlite3_column_type(db->stmtById(stmt), iCol);
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_column_type,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
+    return WASMRawI32::make(
+        sqlite3_column_type(db->stmtById(stmt.get()), iCol.get()));
 }
-WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_column_text_size,
-                     (int64_t stmt, int32_t iCol)) {
+WR_API_FUNCTION_IMPL(WASMRawI64, nr_sqlite3_column_text_size,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
 
     const char *text =
-        (const char *)sqlite3_column_text(db->stmtById(stmt), iCol);
+        (const char *)sqlite3_column_text(db->stmtById(stmt.get()), iCol.get());
     if (text)
-        return strlen(text);
-    return -1;
+        return WASMRawI64::make(strlen(text));
+    return WASMRawI64::make(-1);
 }
 WR_API_FUNCTION_IMPL(void, nr_sqlite3_column_text_get,
-                     (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
+                     (WASMRawI64 stmt, WASMRawI32 iCol,
+                      WASMRawU64 out_result_offset)) {
     const char *text =
-        (const char *)sqlite3_column_text(db->stmtById(stmt), iCol);
+        (const char *)sqlite3_column_text(db->stmtById(stmt.get()), iCol.get());
     size_t len = strlen(text);
-    if (!runtime->setVMData(text, out_result_offset, len + 1)) {
+    if (!runtime->setVMData(text, out_result_offset.get(), len + 1)) {
         assert(false);
         return;
     }
 }
-WR_API_FUNCTION_IMPL(double, nr_sqlite3_column_double,
-                     (int64_t stmt, int32_t iCol)) {
-    return sqlite3_column_double(db->stmtById(stmt), iCol);
+WR_API_FUNCTION_IMPL(WASMRawF64, nr_sqlite3_column_double,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
+    return WASMRawF64::make(
+        sqlite3_column_double(db->stmtById(stmt.get()), iCol.get()));
 }
-WR_API_FUNCTION_IMPL(int64_t, nr_sqlite3_column_int64,
-                     (int64_t stmt, int32_t iCol)) {
-    return sqlite3_column_int64(db->stmtById(stmt), iCol);
+WR_API_FUNCTION_IMPL(WASMRawI64, nr_sqlite3_column_int64,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
+    return WASMRawI64::make(
+        sqlite3_column_int64(db->stmtById(stmt.get()), iCol.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_column_bytes,
-                     (int64_t stmt, int32_t iCol)) {
-    return sqlite3_column_bytes(db->stmtById(stmt), iCol);
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_column_bytes,
+                     (WASMRawI64 stmt, WASMRawI32 iCol)) {
+    return WASMRawI32::make(
+        sqlite3_column_bytes(db->stmtById(stmt.get()), iCol.get()));
 }
 WR_API_FUNCTION_IMPL(void, nr_sqlite3_column_blob_get,
-                     (int64_t stmt, int32_t iCol, uint64_t out_result_offset)) {
-    size_t len = sqlite3_column_bytes(db->stmtById(stmt), iCol);
-    if (!runtime->setVMData(sqlite3_column_blob(db->stmtById(stmt), iCol),
-                            out_result_offset, len)) {
+                     (WASMRawI64 stmt, WASMRawI32 iCol,
+                      WASMRawU64 out_result_offset)) {
+    size_t len = sqlite3_column_bytes(db->stmtById(stmt.get()), iCol.get());
+    if (!runtime->setVMData(
+            sqlite3_column_blob(db->stmtById(stmt.get()), iCol.get()),
+            out_result_offset.get(), len)) {
         assert(false);
         return;
     }
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_finalize, (int64_t stmt)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_finalize, (WASMRawI64 stmt)) {
 
-    int result = sqlite3_finalize(db->stmtById(stmt));
+    int result = sqlite3_finalize(db->stmtById(stmt.get()));
     if (result == SQLITE_OK)
-        db->stmtDelete(stmt);
-    return result;
+        db->stmtDelete(stmt.get());
+    return WASMRawI32::make(result);
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_reset, (int64_t stmt)) {
-    return sqlite3_reset(db->stmtById(stmt));
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_reset, (WASMRawI64 stmt)) {
+    return WASMRawI32::make(sqlite3_reset(db->stmtById(stmt.get())));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_int,
-                     (int64_t stmt, int32_t a, int32_t b)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_int,
+                     (WASMRawI64 stmt, WASMRawI32 a, WASMRawI32 b)) {
 
-    return sqlite3_bind_int(db->stmtById(stmt), a, b);
+    return WASMRawI32::make(
+        sqlite3_bind_int(db->stmtById(stmt.get()), a.get(), b.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_null, (int64_t stmt, int32_t a)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_null,
+                     (WASMRawI64 stmt, WASMRawI32 a)) {
 
-    return sqlite3_bind_null(db->stmtById(stmt), a);
+    return WASMRawI32::make(
+        sqlite3_bind_null(db->stmtById(stmt.get()), a.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_text,
-                     (int64_t stmt, int32_t a, uint64_t in_text_offset,
-                      int64_t b_size)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_text,
+                     (WASMRawI64 stmt, WASMRawI32 a, WASMRawU64 in_text_offset,
+                      WASMRawI64 b_size)) {
     std::vector<char> hostText;
-    hostText.resize(b_size + 1);
-    if (!runtime->getVMData(hostText.data(), in_text_offset, b_size)) {
+    hostText.resize(b_size.get() + 1);
+    if (!runtime->getVMData(hostText.data(), in_text_offset.get(),
+                            b_size.get())) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    hostText[b_size] = '\0';
+    hostText[b_size.get()] = '\0';
 
-    return sqlite3_bind_text(db->stmtById(stmt), a, hostText.data(), b_size,
-                             SQLITE_TRANSIENT);
+    return WASMRawI32::make(sqlite3_bind_text(db->stmtById(stmt.get()), a.get(),
+                                              hostText.data(), b_size.get(),
+                                              SQLITE_TRANSIENT));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_double,
-                     (int64_t stmt, int32_t a, double b)) {
-    return sqlite3_bind_double(db->stmtById(stmt), a, b);
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_double,
+                     (WASMRawI64 stmt, WASMRawI32 a, WASMRawF64 b)) {
+    return WASMRawI32::make(
+        sqlite3_bind_double(db->stmtById(stmt.get()), a.get(), b.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_int64,
-                     (int64_t stmt, int32_t a, int64_t b)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_int64,
+                     (WASMRawI64 stmt, WASMRawI32 a, WASMRawI64 b)) {
 
-    return sqlite3_bind_int64(db->stmtById(stmt), a, b);
+    return WASMRawI32::make(
+        sqlite3_bind_int64(db->stmtById(stmt.get()), a.get(), b.get()));
 }
-WR_API_FUNCTION_IMPL(int32_t, nr_sqlite3_bind_blob,
-                     (int64_t stmt, int32_t a, uint64_t in_blob_offset,
-                      int32_t n)) {
+WR_API_FUNCTION_IMPL(WASMRawI32, nr_sqlite3_bind_blob,
+                     (WASMRawI64 stmt, WASMRawI32 a, WASMRawU64 in_blob_offset,
+                      WASMRawI32 n)) {
     std::vector<char> hostBlob;
-    hostBlob.resize(n);
-    if (!runtime->getVMData(hostBlob.data(), in_blob_offset, n)) {
+    hostBlob.resize(n.get());
+    if (!runtime->getVMData(hostBlob.data(), in_blob_offset.get(), n.get())) {
         assert(false);
-        return -1;
+        return WASMRawI32::make(-1);
     }
-    return sqlite3_bind_blob(db->stmtById(stmt), a, hostBlob.data(), n,
-                             nullptr);
+    return WASMRawI32::make(sqlite3_bind_blob(
+        db->stmtById(stmt.get()), a.get(), hostBlob.data(), n.get(), nullptr));
 }
 
 } // namespace core

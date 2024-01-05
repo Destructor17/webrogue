@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "uvwasi.h"
 #include "wasi_templates.hpp"
+#include "wasm_types.hpp"
 
 // #if defined(__DJGPP__)
 // #include <time.h>
@@ -18,8 +20,8 @@
 //     return -1; // Defaults to 1000000
 // }
 // struct timespec {
-//     uint64_t tv_sec;
-//     uint64_t tv_nsec;
+//     WASMRawU64 tv_sec;
+//     WASMRawU64 tv_nsec;
 // };
 // static inline int clock_gettime(int clk_id, struct timespec *spec) {
 //     struct timeval tp;
@@ -85,28 +87,90 @@ namespace core {
 WASIObject::WASIObject(ModsRuntime *pRuntime, ResourceStorage *resourceStorage,
                        Config *config)
     : runtime(pRuntime), vfs(resourceStorage, config) {
+    uvwasi_options_t initOptions;
+    uvwasi_errno_t err;
+
+    uvwasi = new uvwasi_s;
+
+    /* Setup the initialization options. */
+    initOptions.in = 0;
+    initOptions.out = 1;
+    initOptions.err = 2;
+    initOptions.fd_table_size = 3;
+    initOptions.argc = 0;
+    initOptions.argv = nullptr;
+    static const char *envp[] = {"ENV1=test_env", nullptr};
+    initOptions.envp = envp;
+    initOptions.preopenc = 0;
+    initOptions.preopens = nullptr;
+    initOptions.allocator = nullptr;
+    initOptions.preopen_socketc = 0;
+    initOptions.preopen_sockets = nullptr;
+
+    err = uvwasi_init(uvwasi, &initOptions);
+
+    assert(err == UVWASI_ESUCCESS);
 }
 
-WASI_FUNCTION_IMPL(int32_t, environ_get, (uint32_t ptrs, uint32_t buff)) {
-    assert(false);
-    return 28;
+WASIObject::~WASIObject() {
+    uvwasi_destroy(uvwasi);
+    delete uvwasi;
 }
 
-WASI_FUNCTION_IMPL(int32_t, environ_sizes_get,
-                   (int32_t count_offset, int32_t buffsize_offset)) {
-    int32_t data = byteswap<int32_t>(0);
-    WASI_CHECK(runtime->setVMData(&data, count_offset, sizeof(int32_t)));
-    WASI_CHECK(runtime->setVMData(&data, buffsize_offset, sizeof(int32_t)));
-    return 0;
+WASI_FUNCTION_IMPL(WASMRawI32, environ_get,
+                   (WASMRawU32 ptrs, WASMRawU32 buff)) {
+    uvwasi_size_t environCount;
+    uvwasi_size_t environBufSize;
+    uvwasi_errno_t ret =
+        uvwasi_environ_sizes_get(uvwasi, &environCount, &environBufSize);
+    if (ret != UVWASI_ESUCCESS)
+        return WASMRawI32::make(ret);
+    std::vector<char *> environment;
+    environment.resize(environCount);
+
+    std::vector<char> environBuf;
+    environBuf.resize(environBufSize);
+
+    ret = uvwasi_environ_get(uvwasi, environment.data(), environBuf.data());
+    if (ret != UVWASI_ESUCCESS)
+        return WASMRawI32::make(ret);
+
+    std::vector<WASMRawU32> wasmEnvironment;
+    wasmEnvironment.reserve(environCount);
+    for (int i = 0; i < environCount; i++) {
+        wasmEnvironment.push_back(WASMRawU32::make(
+            buff.get() + (environment[i] - environBuf.data())));
+    }
+
+    WASI_CHECK(runtime->setVMData(wasmEnvironment.data(), ptrs.get(),
+                                  sizeof(WASMI32) * wasmEnvironment.size()));
+    WASI_CHECK(
+        runtime->setVMData(environBuf.data(), buff.get(), environBuf.size()));
+
+    return WASMRawI32::make(ret);
 }
 
-WASI_FUNCTION_IMPL(int32_t, random_get, (uint32_t a, uint32_t b)) {
-    return 0;
+WASI_FUNCTION_IMPL(WASMRawI32, environ_sizes_get,
+                   (WASMRawI32 count_offset, WASMRawI32 buffsize_offset)) {
+    uvwasi_size_t environCount;
+    uvwasi_size_t environBufSize;
+    uvwasi_errno_t ret =
+        uvwasi_environ_sizes_get(uvwasi, &environCount, &environBufSize);
+    WASMU32 data = WASMU32::make(environCount);
+    WASI_CHECK(runtime->setVMData(&data, count_offset.get(), sizeof(WASMI32)));
+    data = WASMU32::make(environBufSize);
+    WASI_CHECK(
+        runtime->setVMData(&data, buffsize_offset.get(), sizeof(WASMI32)));
+    return WASMRawI32::make(ret);
 }
 
-WASI_FUNCTION_IMPL(uint32_t, clock_time_get,
-                   (uint32_t clk_id, uint64_t precision,
-                    uint32_t out_time_offset)) {
+WASI_FUNCTION_IMPL(WASMRawI32, random_get, (WASMRawU32 a, WASMRawU32 b)) {
+    return WASMRawI32::make(0);
+}
+
+WASI_FUNCTION_IMPL(WASMRawU32, clock_time_get,
+                   (WASMRawU32 clk_id, WASMRawU64 precision,
+                    WASMRawU32 out_time_offset)) {
 
     // // m3ApiGetArg(__wasi_clockid_t, wasi_clk_id)
     // //     m3ApiGetArg(__wasi_timestamp_t, precision)
@@ -127,110 +191,113 @@ WASI_FUNCTION_IMPL(uint32_t, clock_time_get,
     //     runtime->setVMData(&tp, out_time_offset,
     //     sizeof(nr_wasi_timestamp_t)));
     // // m3ApiWriteMem64(time, convert_timespec(&tp));
-    return 0;
+    return WASMRawU32::make(0);
 }
 
-WASI_FUNCTION_IMPL(void, proc_exit, (int32_t a)) {
+WASI_FUNCTION_IMPL(void, proc_exit, (WASMRawI32 a)) {
     abort();
 }
 
-WASI_FUNCTION_IMPL(int32_t, fd_sync, (uint32_t a)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_sync, (WASMRawU32 a)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_allocate, (uint32_t a, uint64_t b, uint64_t c)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_allocate,
+                   (WASMRawU32 a, WASMRawU64 b, WASMRawU64 c)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_datasync, (uint32_t a)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_datasync, (WASMRawU32 a)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_tell, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_tell, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_pwrite,
-                   (uint32_t a, uint32_t b, uint32_t c, uint64_t d,
-                    uint32_t e)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_pwrite,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU64 d,
+                    WASMRawU32 e)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, clock_res_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, clock_res_get, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_renumber, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_renumber, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_pread,
-                   (uint32_t a, uint32_t b, uint32_t c, uint64_t d,
-                    uint32_t e)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_pread,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU64 d,
+                    WASMRawU32 e)) {
     abort();
 }
-WASI_FUNCTION_IMPL(uint32_t, path_create_directory,
-                   (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(WASMRawU32, path_create_directory,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, sched_yield, ()) {
+WASI_FUNCTION_IMPL(WASMRawI32, sched_yield, ()) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_filestat_set_times,
-                   (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_filestat_set_times,
+                   (WASMRawU32 a, WASMRawU64 b, WASMRawU64 c, WASMRawU32 d)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, args_sizes_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, args_sizes_get, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_filestat_set_size, (uint32_t a, uint64_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_filestat_set_size,
+                   (WASMRawU32 a, WASMRawU64 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, sock_recv,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                    uint32_t f)) {
+WASI_FUNCTION_IMPL(WASMRawI32, sock_recv,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU32 e, WASMRawU32 f)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_filestat_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_filestat_get, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, sock_shutdown, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, sock_shutdown, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, poll_oneoff,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(WASMRawI32, poll_oneoff,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, path_link,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                    uint32_t f, uint32_t g)) {
+WASI_FUNCTION_IMPL(WASMRawI32, path_link,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU32 e, WASMRawU32 f, WASMRawU32 g)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, sock_accept, (uint32_t a, uint32_t b, uint32_t c)) {
+WASI_FUNCTION_IMPL(WASMRawI32, sock_accept,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, path_readlink,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint32_t e,
-                    uint32_t f)) {
+WASI_FUNCTION_IMPL(WASMRawI32, path_readlink,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU32 e, WASMRawU32 f)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_advise,
-                   (uint32_t a, uint64_t b, uint64_t c, uint32_t d)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_advise,
+                   (WASMRawU32 a, WASMRawU64 b, WASMRawU64 c, WASMRawU32 d)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, path_filestat_set_times,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint64_t e,
-                    uint64_t f, uint32_t g)) {
+WASI_FUNCTION_IMPL(WASMRawI32, path_filestat_set_times,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU64 e, WASMRawU64 f, WASMRawU32 g)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, args_get, (uint32_t a, uint32_t b)) {
+WASI_FUNCTION_IMPL(WASMRawI32, args_get, (WASMRawU32 a, WASMRawU32 b)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, path_symlink,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d,
-                    uint32_t e)) {
+WASI_FUNCTION_IMPL(WASMRawI32, path_symlink,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU32 e)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, sock_send,
-                   (uint32_t a, uint32_t b, uint32_t c, uint32_t d,
-                    uint32_t e)) {
+WASI_FUNCTION_IMPL(WASMRawI32, sock_send,
+                   (WASMRawU32 a, WASMRawU32 b, WASMRawU32 c, WASMRawU32 d,
+                    WASMRawU32 e)) {
     abort();
 }
-WASI_FUNCTION_IMPL(int32_t, fd_fdstat_set_rights,
-                   (uint32_t a, uint64_t b, uint64_t c)) {
+WASI_FUNCTION_IMPL(WASMRawI32, fd_fdstat_set_rights,
+                   (WASMRawU32 a, WASMRawU64 b, WASMRawU64 c)) {
     abort();
 }
 

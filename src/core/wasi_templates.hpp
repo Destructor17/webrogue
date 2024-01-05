@@ -9,8 +9,8 @@ namespace core {
 
 #define WASI_CHECK(condition)                                                  \
     if (!(condition)) {                                                        \
-        assert(false);                                                         \
-        return -1;                                                             \
+        abort();                                                               \
+        return WASMRawI32::make(-1);                                           \
     }
 
 template <typename T> struct wasi_size_helper;

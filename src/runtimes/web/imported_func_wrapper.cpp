@@ -29,6 +29,7 @@ extern void setImportFuncNames(const char *jsonPtr);
 }
 
 namespace webrogue {
+using namespace core;
 namespace runtimes {
 namespace web {
 
@@ -68,52 +69,52 @@ template <class Tp, class F> F inline tupleForEach(Tp &&tp, F &&f) {
                                     std::forward<F>(f));
 }
 
-void writeResult(int32_t result) {
-    writeInt32Result(result);
+void writeResult(WASMRawI32 result) {
+    writeInt32Result(result.get());
 }
 
-void writeResult(uint32_t result) {
-    writeUInt32Result(result);
+void writeResult(WASMRawU32 result) {
+    writeUInt32Result(result.get());
 }
 
-void writeResult(int64_t result) {
-    writeInt64Result(result);
+void writeResult(WASMRawI64 result) {
+    writeInt64Result(result.get());
 }
 
-void writeResult(uint64_t result) {
-    writeUInt64Result(result);
+void writeResult(WASMRawU64 result) {
+    writeUInt64Result(result.get());
 }
 
-void writeResult(float result) {
-    writeFloatResult(result);
+void writeResult(WASMRawF32 result) {
+    writeFloatResult(result.get());
 }
 
-void writeResult(double result) {
-    writeDoubleResult(result);
+void writeResult(WASMRawF64 result) {
+    writeDoubleResult(result.get());
 }
 
-void argFromStack(int32_t &dest, size_t argNum) {
-    dest = getArgInt32(argNum);
+void argFromStack(WASMRawI32 &dest, size_t argNum) {
+    dest = WASMRawI32::make(getArgInt32(argNum));
 }
 
-void argFromStack(uint32_t &dest, size_t argNum) {
-    dest = getArgUInt32(argNum);
+void argFromStack(WASMRawU32 &dest, size_t argNum) {
+    dest = WASMRawU32::make(getArgUInt32(argNum));
 }
 
-void argFromStack(int64_t &dest, size_t argNum) {
-    dest = getArgInt64(argNum);
+void argFromStack(WASMRawI64 &dest, size_t argNum) {
+    dest = WASMRawI64::make(getArgInt64(argNum));
 }
 
-void argFromStack(uint64_t &dest, size_t argNum) {
-    dest = getArgUInt64(argNum);
+void argFromStack(WASMRawU64 &dest, size_t argNum) {
+    dest = WASMRawU64::make(getArgUInt64(argNum));
 }
 
-void argFromStack(float &dest, size_t argNum) {
-    dest = getArgFloat(argNum);
+void argFromStack(WASMRawF32 &dest, size_t argNum) {
+    dest = WASMRawF32::make(getArgFloat(argNum));
 }
 
-void argFromStack(double &dest, size_t argNum) {
-    dest = getArgDouble(argNum);
+void argFromStack(WASMRawF64 &dest, size_t argNum) {
+    dest = WASMRawF64::make(getArgDouble(argNum));
 }
 
 typedef void (*wrappedFunc)();
@@ -193,33 +194,33 @@ template <> struct ret_type_string<void> {
         return "void";
     }
 };
-template <> struct ret_type_string<int32_t> {
+template <> struct ret_type_string<WASMRawI32> {
     static std::string getStr() {
         return "int32_t";
     }
 };
-template <> struct ret_type_string<uint32_t> {
+template <> struct ret_type_string<WASMRawU32> {
     static std::string getStr() {
         return "uint32_t";
     }
 };
-template <> struct ret_type_string<int64_t> {
+template <> struct ret_type_string<WASMRawI64> {
     static std::string getStr() {
         return "int64_t";
     }
 };
-template <> struct ret_type_string<uint64_t> {
+template <> struct ret_type_string<WASMRawU64> {
     static std::string getStr() {
         return "uint64_t";
     }
 };
 
-template <> struct ret_type_string<float> {
+template <> struct ret_type_string<WASMRawF32> {
     static std::string getStr() {
         return "float";
     }
 };
-template <> struct ret_type_string<double> {
+template <> struct ret_type_string<WASMRawF64> {
     static std::string getStr() {
         return "double";
     }

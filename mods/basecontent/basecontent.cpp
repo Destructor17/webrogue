@@ -83,6 +83,9 @@ void moveField(bool f, bool v) {
 
 namespace sql = sqlpp::sqlite3;
 void basecontentInitializationStep() {
+
+    webrogue_core_print(getenv("ENV1"));
+
     sql::connection_config config;
     config.path_to_database = ":memory:";
     config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;

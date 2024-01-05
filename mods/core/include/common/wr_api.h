@@ -1,4 +1,3 @@
-#if !defined(WR_API_FUNCTION)
 #include "../macros.h"
 #include <stdint.h>
 #define WR_API_FUNCTION(RET_TYPE, NAME, ARGS) NR_IMPORTED(RET_TYPE, NAME) ARGS;
@@ -6,7 +5,13 @@
 extern "C" {
 #define EXTERN_C
 #endif
-#endif
+
+typedef int32_t WASMRawI32;
+typedef uint32_t WASMRawU32;
+typedef int64_t WASMRawI64;
+typedef uint64_t WASMRawU64;
+typedef float WASMRawF32;
+typedef double WASMRawF64;
 
 #include "wr_api_functions.def"
 

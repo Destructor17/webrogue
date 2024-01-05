@@ -4,6 +4,7 @@
 #include <vector>
 
 namespace webrogue {
+using namespace core;
 namespace runtimes {
 namespace wamr {
 template <char c> struct WamrGlueSig {
@@ -17,17 +18,19 @@ using is_enum_of_t = typename std::enable_if<
     std::is_same<std::underlying_type_t<T>, U>::value>::type;
 
 template <typename T>
-struct wamr_glue_type_to_sig<T, is_enum_of_t<T, int32_t>> : WamrGlueSig<'i'> {};
+struct wamr_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI32>>
+    : WamrGlueSig<'i'> {};
 
 template <class T>
-struct wamr_glue_type_to_sig<T, is_enum_of_t<T, int64_t>> : WamrGlueSig<'I'> {};
+struct wamr_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI64>>
+    : WamrGlueSig<'I'> {};
 
-template <> struct wamr_glue_type_to_sig<int32_t> : WamrGlueSig<'i'> {};
-template <> struct wamr_glue_type_to_sig<uint32_t> : WamrGlueSig<'i'> {};
-template <> struct wamr_glue_type_to_sig<int64_t> : WamrGlueSig<'I'> {};
-template <> struct wamr_glue_type_to_sig<uint64_t> : WamrGlueSig<'I'> {};
-template <> struct wamr_glue_type_to_sig<float> : WamrGlueSig<'f'> {};
-template <> struct wamr_glue_type_to_sig<double> : WamrGlueSig<'F'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawI32> : WamrGlueSig<'i'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawU32> : WamrGlueSig<'i'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawI64> : WamrGlueSig<'I'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawU64> : WamrGlueSig<'I'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawF32> : WamrGlueSig<'f'> {};
+template <> struct wamr_glue_type_to_sig<WASMRawF64> : WamrGlueSig<'F'> {};
 template <typename T> struct wamr_glue_type_to_sig<T *> : WamrGlueSig<'*'> {};
 template <typename T>
 struct wamr_glue_type_to_sig<const T *> : WamrGlueSig<'*'> {};

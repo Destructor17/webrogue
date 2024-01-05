@@ -5,6 +5,7 @@
 #include <tuple>
 
 namespace webrogue {
+using namespace core;
 namespace runtimes {
 namespace m3 {
 
@@ -19,18 +20,18 @@ using is_enum_of_t = typename std::enable_if<
     std::is_same<std::underlying_type_t<T>, U>::value>::type;
 
 template <typename T>
-struct m3_glue_type_to_sig<T, is_enum_of_t<T, int32_t>> : M3GlueSig<'i'> {};
+struct m3_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI32>> : M3GlueSig<'i'> {};
 
 template <class T>
-struct m3_glue_type_to_sig<T, is_enum_of_t<T, int64_t>> : M3GlueSig<'I'> {};
+struct m3_glue_type_to_sig<T, is_enum_of_t<T, WASMRawI64>> : M3GlueSig<'I'> {};
 
 template <> struct m3_glue_type_to_sig<void> : M3GlueSig<'v'> {};
-template <> struct m3_glue_type_to_sig<int32_t> : M3GlueSig<'i'> {};
-template <> struct m3_glue_type_to_sig<uint32_t> : M3GlueSig<'i'> {};
-template <> struct m3_glue_type_to_sig<int64_t> : M3GlueSig<'I'> {};
-template <> struct m3_glue_type_to_sig<uint64_t> : M3GlueSig<'I'> {};
+template <> struct m3_glue_type_to_sig<WASMRawI32> : M3GlueSig<'i'> {};
+template <> struct m3_glue_type_to_sig<WASMRawU32> : M3GlueSig<'i'> {};
+template <> struct m3_glue_type_to_sig<WASMRawI64> : M3GlueSig<'I'> {};
+template <> struct m3_glue_type_to_sig<WASMRawU64> : M3GlueSig<'I'> {};
 template <> struct m3_glue_type_to_sig<float> : M3GlueSig<'f'> {};
-template <> struct m3_glue_type_to_sig<double> : M3GlueSig<'F'> {};
+template <> struct m3_glue_type_to_sig<WASMRawF64> : M3GlueSig<'F'> {};
 template <typename T> struct m3_glue_type_to_sig<T *> : M3GlueSig<'*'> {};
 template <typename T> struct m3_glue_type_to_sig<const T *> : M3GlueSig<'*'> {};
 

@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+using namespace webrogue::core;
+
 #define WR_API_FUNCTION(RET_TYPE, NAME, ARGS) extern "C" RET_TYPE NAME ARGS;
 #include "../../../mods/core/include/common/wr_api_functions.def"
 #undef WR_API_FUNCTION
