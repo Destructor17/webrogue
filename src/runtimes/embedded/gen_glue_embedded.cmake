@@ -50,4 +50,4 @@ foreach(func_i RANGE 1 ${num_of_funcs})
     string(APPEND out_content "\n")
 endforeach()
 
-file(WRITE ${NR_API_EMBEDDING}.cpp "${out_content}")
+file(WRITE ${WR_API_EMBEDDING}.cpp "${out_content}")

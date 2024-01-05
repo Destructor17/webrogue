@@ -87,8 +87,8 @@ set(
 
     ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/embedded_runtime.hpp
     ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/embedded_runtime.cpp
-    ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.hpp
-    ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.cpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/wr_api_embedding_glue.hpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/wr_api_embedding_glue.cpp
     ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/shared_api_object.hpp
     ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/shared_api_object.cpp
 )
@@ -127,8 +127,8 @@ set(
 set(
     WEBROGUE_WASM2C_RUNTIME_SOURCE_FILES
 
-    ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_glue.cpp
-    ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_wasi.cpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wr_api_wasm2c_glue.cpp
+    ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wr_api_wasm2c_wasi.cpp
     ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wasm2c_runtime.hpp
     ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wasm2c_runtime.cpp
 
@@ -193,20 +193,20 @@ embed_resource(${WEBROGUE_ROOT_PATH}/src/outputs/sdl/sdl_font.ttf)
 
 #glue
 add_custom_command(
-    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.hpp ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/nr_api_embedding_glue.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DNR_API_EMBEDDING=src/runtimes/embedded/nr_api_embedding_glue" -P src/runtimes/embedded/gen_glue_embedded.cmake
+    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/wr_api_embedding_glue.hpp ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/wr_api_embedding_glue.cpp
+    COMMAND ${CMAKE_COMMAND} "-DWR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DWR_API_EMBEDDING=src/runtimes/embedded/wr_api_embedding_glue" -P src/runtimes/embedded/gen_glue_embedded.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
     DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/wr_api_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/embedded/gen_glue_embedded.cmake
 )
 add_custom_command(
-    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_glue.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_glue" -P src/runtimes/wasm2c/gen_glue_wasm2c.cmake
+    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wr_api_wasm2c_glue.cpp
+    COMMAND ${CMAKE_COMMAND} "-DWR_API_HEADER=mods/core/include/common/wr_api_functions.def" "-DWR_API_EMBEDDING=src/runtimes/wasm2c/wr_api_wasm2c_glue" -P src/runtimes/wasm2c/gen_glue_wasm2c.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
     DEPENDS ${WEBROGUE_ROOT_PATH}/mods/core/include/common/wr_api_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_glue_wasm2c.cmake
 )
 add_custom_command(
-    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/nr_api_wasm2c_wasi.cpp
-    COMMAND ${CMAKE_COMMAND} "-DNR_API_HEADER=src/core/wasi_functions.def" "-DNR_API_EMBEDDING=src/runtimes/wasm2c/nr_api_wasm2c_wasi" -P src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
+    OUTPUT ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/wr_api_wasm2c_wasi.cpp
+    COMMAND ${CMAKE_COMMAND} "-DWR_API_HEADER=src/core/wasi_functions.def" "-DWR_API_EMBEDDING=src/runtimes/wasm2c/wr_api_wasm2c_wasi" -P src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
     WORKING_DIRECTORY ${WEBROGUE_ROOT_PATH}
     DEPENDS ${WEBROGUE_ROOT_PATH}/src/core/wasi_functions.def ${WEBROGUE_ROOT_PATH}/src/runtimes/wasm2c/gen_wasi_wasm2c.cmake
 )

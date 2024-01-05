@@ -5,7 +5,7 @@ function(parse_api_header)
     set(multiValueArgs)
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    file(READ ${NR_API_HEADER} content)
+    file(READ ${WR_API_HEADER} content)
     string(REPLACE "\n" " " content "${content}")
     string(REGEX REPLACE "[\n ]+" " " content "${content}")
     string(REGEX MATCHALL "${ARG_FUNC_MACRO}\\((void|WASMRawI32|WASMRawU32|WASMRawF32|WASMRawI64|WASMRawU64|WASMRawF64), [^,]+, +\\([^\)]*\\)\\)" content "${content}")
