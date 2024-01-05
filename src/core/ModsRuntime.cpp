@@ -8,8 +8,11 @@ namespace core {
 ModsRuntime::ModsRuntime(ConsoleStream *wrout, ConsoleStream *wrerr,
                          ResourceStorage *resourceStorage, Config *config)
     : wrout(wrout), wrerr(wrerr), resourceStorage(resourceStorage),
-      config(config), apiObject(this, config),
-      wasiObject(this, resourceStorage, config) {
+      config(config),
+#ifndef WEBROGUE_NO_WASI
+      wasiObject(this, resourceStorage, config),
+#endif
+      apiObject(this, config) {
 }
 
 ModsRuntime::~ModsRuntime() {
@@ -28,7 +31,10 @@ void ModsRuntime::interrupt() {
 }
 
 void ModsRuntime::onFrameEnd() {
+
+#ifndef WEBROGUE_NO_WASI
     wasiObject.vfs.commit();
+#endif
     config->onFrameEnd();
 }
 } // namespace core

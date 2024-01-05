@@ -3,6 +3,7 @@
 #include "../../core/ApiObject.hpp"
 #include "../../core/ConsoleStream.hpp"
 #include "shared_api_object.hpp"
+#include "wr_api_embedding_glue.hpp"
 #include <cstring>
 #include <vector>
 
@@ -33,13 +34,8 @@ EmbeddedModsRuntime::EmbeddedModsRuntime(
 void EmbeddedModsRuntime::initMods() {
     // TODO remove
     //  needed to mark api functions as used to prevent strange linking bug
-    std::vector<void *> api_functions;
-    {
-        // #define WR_API_FUNCTION(RET_TYPE, NAME, ARGS)                                  \
-//     api_functions.push_back((void *)&NAME);
-        // #include "../../../mods/core/include/common/wr_api_functions.def"
-        // #undef WR_API_FUNCTION
-    };
+    init_wr_embedded_api();
+
     *wrout << "initialization started\n";
 #define mod_to_embed(name) init_mod_##name();
 #include stringize(MOD_LIST_HEADER)

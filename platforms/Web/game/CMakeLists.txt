@@ -45,8 +45,9 @@ make_webrogue_core(
 
 #libuv
 set(LIBUV_BUILD_SHARED OFF)
+exec_program(git ${WEBROGUE_ROOT_PATH}/external/libuv ARGS apply ${WEBROGUE_ROOT_PATH}/platforms/Web/libuv.patch OUTPUT_VARIABLE v)
 add_subdirectory(${WEBROGUE_ROOT_PATH}/external/libuv libuv)
-target_link_libraries(webrogue_core uv)
+target_link_libraries(webrogue_core uv_a)
 target_include_directories(webrogue_core PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
 
 target_link_libraries(webrogue_output_sdl webrogue_core)
@@ -59,7 +60,8 @@ make_webrogue_runtime(
 set(WEBROGUE_COMPACT_LINKER_STATIC ON)
 include(${WEBROGUE_ROOT_PATH}/cmake/make_compact_linker.cmake)
 
-add_executable(webrogue_game "./main.cpp")
+add_executable(webrogue_game "./main.cpp" "../uv_emscripten.c")
+target_include_directories(webrogue_game PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
 target_link_libraries(webrogue_game webrogue_output_sdl webrogue_core webrogue_runtime_web compact_linker idbfs.js)
 target_include_directories(webrogue_game PRIVATE ${WEBROGUE_ROOT_PATH}/embedded_resources)
 

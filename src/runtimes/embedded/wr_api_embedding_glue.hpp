@@ -1,0 +1,1 @@
+extern "C" void init_wr_embedded_api();

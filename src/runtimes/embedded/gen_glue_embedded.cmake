@@ -50,4 +50,7 @@ foreach(func_i RANGE 1 ${num_of_funcs})
     string(APPEND out_content "\n")
 endforeach()
 
+
+string(APPEND out_content "extern \"C\" void init_wr_embedded_api() {}\n")
+
 file(WRITE ${WR_API_EMBEDDING}.cpp "${out_content}")

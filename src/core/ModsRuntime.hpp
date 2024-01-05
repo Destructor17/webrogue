@@ -18,7 +18,9 @@ public:
     ModsRuntime(ConsoleStream *wrout, ConsoleStream *wrerr,
                 ResourceStorage *resourceStorage, Config *config);
     ApiObject apiObject;
+#ifndef WEBROGUE_NO_WASI
     WASIObject wasiObject;
+#endif
     Linker *linker;
     ConsoleStream *wrout;
     ConsoleStream *wrerr;

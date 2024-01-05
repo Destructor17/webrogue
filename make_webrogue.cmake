@@ -56,13 +56,6 @@ set(
     ${WEBROGUE_ROOT_PATH}/external/xz/linux/lib/xz/xz_dec_lzma2.c
     ${WEBROGUE_ROOT_PATH}/external/xz/linux/lib/xz/xz_dec_stream.c
     ${WEBROGUE_ROOT_PATH}/external/xz/linux/lib/xz/xz_crc32.c
-    
-
-    ${WEBROGUE_ROOT_PATH}/src/core/wasi_templates.hpp
-    ${WEBROGUE_ROOT_PATH}/src/core/wasi_types.hpp
-    ${WEBROGUE_ROOT_PATH}/src/core/WASIObject.hpp
-    ${WEBROGUE_ROOT_PATH}/src/core/WASIObject.cpp
-    ${WEBROGUE_ROOT_PATH}/src/core/WASIObjectFS.cpp
 )
 
 
@@ -155,7 +148,13 @@ set(
 )
 
 set(
-    UVWASI_SOURCE_FILES
+    WASI_SOURCE_FILES
+
+    ${WEBROGUE_ROOT_PATH}/src/core/wasi_templates.hpp
+    ${WEBROGUE_ROOT_PATH}/src/core/wasi_types.hpp
+    ${WEBROGUE_ROOT_PATH}/src/core/WASIObject.hpp
+    ${WEBROGUE_ROOT_PATH}/src/core/WASIObject.cpp
+    ${WEBROGUE_ROOT_PATH}/src/core/WASIObjectFS.cpp
 
     ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/clocks.c
     ${WEBROGUE_ROOT_PATH}/external/uvwasi/src/fd_table.c
@@ -447,7 +446,7 @@ function(make_webrogue_runtime)
 endfunction()
 
 function(make_webrogue_core)
-    set(options STATIC SHARED NO_WASM)
+    set(options STATIC SHARED NO_WASM NO_WASI)
     set(oneValueArgs LIB_NAME)
     set(multiValueArgs)
     cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -462,8 +461,10 @@ function(make_webrogue_core)
     set(
         SOURCES 
         ${WEBROGUE_CORE_SOURCE_FILES}
-        ${UVWASI_SOURCE_FILES}
     )
+    if(NOT ARGS_NO_WASI)
+        list(APPEND SOURCES ${WASI_SOURCE_FILES})
+    endif()
     add_library(${ARGS_LIB_NAME} ${LIB_TYPE} ${SOURCES})
     add_dependencies(${ARGS_LIB_NAME} pack_mods_to_build_dir)
     target_include_directories(
@@ -472,5 +473,8 @@ function(make_webrogue_core)
         ${WEBROGUE_ROOT_PATH}/external/xz/linux/include/linux
         ${WEBROGUE_ROOT_PATH}/external/uvwasi/include
     )
+    if(ARGS_NO_WASI)
+        target_compile_definitions(${ARGS_LIB_NAME} PRIVATE WEBROGUE_NO_WASI)
+    endif()
 endfunction()
 
