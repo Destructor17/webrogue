@@ -30,11 +30,13 @@ function(register_mod)
     add_custom_command(
         OUTPUT ${BUNDLED_FILE_NAME}
         COMMAND ${CMAKE_COMMAND} -E rm -f ${BUNDLED_FILE_NAME}
-        COMMAND ${ar_tool} rsc ${BUNDLED_FILE_NAME} $<TARGET_FILE:${ADD_MOD_NAME}> 
-        COMMENT "Bundling ${ADD_MOD_NAME}"
+        COMMAND ${ar_tool} rsc ${BUNDLED_FILE_NAME} $<TARGET_FILE:${ADD_MOD_NAME}>
+        DEPENDS $<TARGET_FILE:${ADD_MOD_NAME}> 
     )
     add_custom_target(
         bundle_${ADD_MOD_NAME}
+        BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/mod.a
+        COMMAND ${CMAKE_COMMAND} -E echo "Bundling ${ADD_MOD_NAME}"
         DEPENDS ${BUNDLED_FILE_NAME}
     )
 endfunction()
@@ -69,14 +71,10 @@ foreach(mod ${mods})
     set(WEBROGUE_MOD_NAME ${mod})
     add_subdirectory(${mod})
     add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/mod.a
-        DEPENDS bundle_${mod}
-    )
-    add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/${mod}.wrmod
         COMMAND python3 ${MODS_ROOT_PATH}/tools/pack_mods.py normal ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/${mod}.wrmod ${CMAKE_CURRENT_SOURCE_DIR}/${mod}
         COMMAND python3 ${MODS_ROOT_PATH}/tools/pack_mods.py nowasm ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/${mod}.ewrmod ${CMAKE_CURRENT_SOURCE_DIR}/${mod}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/mod.a ${MODS_ROOT_PATH}/tools/pack_mods.py
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${mod}/mod.a ${MODS_ROOT_PATH}/tools/pack_mods.py bundle_${mod}
         COMMENT "Packing ${MOD_TARGET_NAME}"
     )
     list(APPEND WASM_LD_FLAGS "${CMAKE_CURRENT_SOURCE_DIR}/${mod}/mod.a" "--export=init_mod_${mod}")
