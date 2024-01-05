@@ -179,3 +179,50 @@ jobs:
         with:
           name: Artifacts-Android
           path: artifacts/webrogue.apk
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Artifacts-MacOS
+          path: |
+            ./artifacts
+
+  macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Submodules
+      run: |
+        git submodule update --init --recursive --single-branch external/xz/
+        git submodule update --init --recursive --single-branch external/libuv/
+        git submodule update --init --recursive --single-branch external/uvwasi/
+        git submodule update --init --recursive --single-branch external/wamr/
+
+    - name: Configure and try to build
+      run: |
+        sh platforms/MacOS/build.sh
+
+  ios:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Submodules
+      run: |
+        git submodule update --init --recursive --single-branch external/xz/
+        git submodule update --init --recursive --single-branch external/libuv/
+        git submodule update --init --recursive --single-branch external/uvwasi/
+        git submodule update --init --recursive --single-branch external/wamr/
+        git submodule update --init --recursive --single-branch platforms/iOS/external/SnapKit
+
+    - name: Configure and try to build
+      run: |
+        sh platforms/iOS/build.sh
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts-iOS
+        path: |
+          ./artifacts
