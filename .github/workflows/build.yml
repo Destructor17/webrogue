@@ -216,6 +216,8 @@ jobs:
         git submodule update --init --recursive --single-branch external/uvwasi/
         git submodule update --init --recursive --single-branch external/wamr/
         git submodule update --init --recursive --single-branch platforms/iOS/external/SnapKit
+        git submodule update --init --recursive --single-branch external/SDL/
+        git submodule update --init --recursive --single-branch external/SDL_ttf/
 
     - name: Configure and try to build
       run: |
