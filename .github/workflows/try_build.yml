@@ -36,14 +36,16 @@ jobs:
         git submodule update --init --recursive --single-branch external/libuv/
         git submodule update --init --recursive --single-branch external/uvwasi/
 
-    - name: Configure and try to build
+    - name: Install Emscripten
       run: |
         git clone https://github.com/emscripten-core/emsdk.git
         ./emsdk/emsdk install latest
         ./emsdk/emsdk activate latest
         . ./emsdk/emsdk_env.sh
-        emcmake cmake -Bplatforms/Web/homepage/build -Splatforms/Web/homepage/ -DCMAKE_BUILD_TYPE=Debug
-        cmake --build platforms/Web/homepage/build/ --target pack_artifacts -j
+
+    - name: Configure and try to build
+      run: |        
+        sh platforms/Web/build_and_pack.sh Debug
 
   linux:
     runs-on: ubuntu-latest

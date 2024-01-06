@@ -153,8 +153,19 @@
         if (text) console.error('[post-exception status] ' + text);
       };
     };
+    fetch(typeof WebAssembly === 'undefined' ? "./webrogue_homepage_asmjs.js" : "./webrogue_homepage_wasm.js").then(function (response) {
+      if (!response.ok) {
+        return false;
+      }
+      return response.blob();
+    }).then(function (myBlob) {
+      var objectURL = URL.createObjectURL(myBlob);
+      var sc = document.createElement("script");
+      sc.setAttribute("src", objectURL);
+      sc.setAttribute("type", "text/javascript");
+      document.head.appendChild(sc);
+    })
   </script>
-  <script async type="text/javascript" src="./webrogue_homepage.js"></script>
 </body>
 
 </html>

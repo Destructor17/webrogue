@@ -41,23 +41,16 @@ jobs:
         git submodule update --init --recursive --single-branch external/libuv/
         git submodule update --init --recursive --single-branch external/uvwasi/
 
-    - name: Configure and build
+    - name: Install Emscripten
       run: |
         git clone https://github.com/emscripten-core/emsdk.git
         ./emsdk/emsdk install latest
         ./emsdk/emsdk activate latest
         . ./emsdk/emsdk_env.sh
-        
-        rm -rf game_artifacts
-        emcmake cmake -Bplatforms/Web/game/build -Splatforms/Web/game/ -DCMAKE_BUILD_TYPE=Release
-        cmake --build platforms/Web/game/build/ --target pack_artifacts -j
-        
-        mv artifacts game_artifacts
-        
-        emcmake cmake -Bplatforms/Web/homepage/build -Splatforms/Web/homepage/ -DCMAKE_BUILD_TYPE=Release
-        cmake --build platforms/Web/homepage/build/ --target pack_artifacts -j
-        
-        mv game_artifacts artifacts/game
+  
+    - name: Configure and build
+      run: |        
+        sh platforms/Web/build_and_pack.sh Release
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3

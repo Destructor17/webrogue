@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.13)
 
+
 project(webrogue_homepage)
+
+if(WEBROGUE_ASMJS)
+    set(WEBROGUE_TARGET_NAME webrogue_homepage_asmjs)
+else()
+    set(WEBROGUE_TARGET_NAME webrogue_homepage_wasm)
+endif()
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 14)
@@ -13,6 +20,11 @@ include(../../../make_webrogue.cmake)
 
 add_compile_options(-sUSE_SDL=2 -sUSE_SDL_TTF=2 -fno-rtti)
 add_link_options(-sUSE_SDL=2 -sUSE_SDL_TTF=2 -sASYNCIFY -sALLOW_MEMORY_GROWTH -sASYNCIFY_STACK_SIZE=65535 -sFORCE_FILESYSTEM -fno-rtti)
+
+if(WEBROGUE_ASMJS)
+    add_compile_options(-sWASM=0)
+    add_link_options(-sWASM=0)
+endif()
 
 make_webrogue_output(
     LIB_NAME webrogue_output_sdl
@@ -39,18 +51,25 @@ make_webrogue_runtime(
     STATIC
     EMBEDDED_RUNTIME_MODS basecontent core
 )
-add_executable(webrogue_homepage "./main.cpp" "../uv_emscripten.c")
-target_include_directories(webrogue_homepage PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
-target_link_libraries(webrogue_homepage webrogue_output_sdl webrogue_core webrogue_runtime_embedded idbfs.js)
-target_include_directories(webrogue_homepage PRIVATE ${WEBROGUE_ROOT_PATH}/embedded_resources)
+add_executable(${WEBROGUE_TARGET_NAME} "./main.cpp" "../uv_emscripten.c")
+target_include_directories(${WEBROGUE_TARGET_NAME} PRIVATE ${WEBROGUE_ROOT_PATH}/external/libuv/include) 
+target_link_libraries(${WEBROGUE_TARGET_NAME} webrogue_output_sdl webrogue_core webrogue_runtime_embedded idbfs.js)
+target_include_directories(${WEBROGUE_TARGET_NAME} PRIVATE ${WEBROGUE_ROOT_PATH}/embedded_resources)
+
+
+if(WEBROGUE_ASMJS)
+    set(WEBROGUE_SECOUND_FILE_EXTENSION "js.mem")
+else()
+    set(WEBROGUE_SECOUND_FILE_EXTENSION "wasm")
+endif()
 
 add_custom_target(pack_artifacts
     COMMAND ${CMAKE_COMMAND} -E rm -rf ${WEBROGUE_ROOT_PATH}/artifacts
     COMMAND ${CMAKE_COMMAND} -E make_directory ${WEBROGUE_ROOT_PATH}/artifacts
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/homepage/index.html ${WEBROGUE_ROOT_PATH}/artifacts/index.html
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/webrogue_homepage.js ${WEBROGUE_ROOT_PATH}/artifacts/webrogue_homepage.js
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/webrogue_homepage.wasm ${WEBROGUE_ROOT_PATH}/artifacts/webrogue_homepage.wasm
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${WEBROGUE_TARGET_NAME}.js ${WEBROGUE_ROOT_PATH}/artifacts/${WEBROGUE_TARGET_NAME}.js
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${WEBROGUE_TARGET_NAME}.${WEBROGUE_SECOUND_FILE_EXTENSION} ${WEBROGUE_ROOT_PATH}/artifacts/${WEBROGUE_TARGET_NAME}.${WEBROGUE_SECOUND_FILE_EXTENSION}
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/noscript/noscript.png ${WEBROGUE_ROOT_PATH}/artifacts/noscript/noscript.png
     COMMAND ${CMAKE_COMMAND} -E copy ${WEBROGUE_ROOT_PATH}/platforms/Web/noscript/index.html ${WEBROGUE_ROOT_PATH}/artifacts/noscript/index.html
-    DEPENDS webrogue_homepage
+    DEPENDS ${WEBROGUE_TARGET_NAME}
 )

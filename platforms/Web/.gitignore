@@ -1,1 +1,4 @@
 /*/build
+/game_artifacts
+/homepage/build_wasm
+/homepage/build_asmjs
