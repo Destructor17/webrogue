@@ -46,10 +46,10 @@ jobs:
         git clone https://github.com/emscripten-core/emsdk.git
         ./emsdk/emsdk install latest
         ./emsdk/emsdk activate latest
-        . ./emsdk/emsdk_env.sh
   
     - name: Configure and build
       run: |        
+        . ./emsdk/emsdk_env.sh
         sh platforms/Web/build_and_pack.sh Release
 
     - name: Upload artifact
